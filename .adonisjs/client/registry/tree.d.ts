@@ -37,4 +37,17 @@ export interface ApiDefinition {
     update: typeof routes['sections.update']
     destroy: typeof routes['sections.destroy']
   }
+  dashboard: {
+    stats: typeof routes['dashboard.stats']
+  }
+  progress: {
+    allDepartments: typeof routes['progress.all_departments']
+    departmentProgress: typeof routes['progress.department_progress']
+    sectionProgress: typeof routes['progress.section_progress']
+    userProgress: typeof routes['progress.user_progress']
+  }
+  notifications: {
+    index: typeof routes['notifications.index']
+    markRead: typeof routes['notifications.mark_read']
+  }
 }

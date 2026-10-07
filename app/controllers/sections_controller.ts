@@ -4,9 +4,6 @@ import Department from '#models/department'
 import { createSectionValidator, updateSectionValidator } from '#validators/section'
 
 export default class SectionsController {
-  /**
-   * બધા sections લિસ્ટ કરો (Department info સાથે)
-   */
   async index({ response }: HttpContext) {
     try {
       const sections = await Section.query()
@@ -22,9 +19,6 @@ export default class SectionsController {
     }
   }
 
-  /**
-   * Single section by ID
-   */
   async show({ params, response }: HttpContext) {
     const section = await Section.query()
       .where('section_id', params.id)
@@ -38,9 +32,6 @@ export default class SectionsController {
     return response.ok({ success: true, data: section })
   }
 
-  /**
-   * Department પ્રમાણે sections
-   */
   async byDepartment({ params, response }: HttpContext) {
     try {
       const sections = await Section.query()
@@ -56,9 +47,6 @@ export default class SectionsController {
     }
   }
 
-  /**
-   * નવું Section બનાવો
-   */
   async store({ request, response }: HttpContext) {
     try {
       const payload = await request.validateUsing(createSectionValidator)
@@ -75,6 +63,7 @@ export default class SectionsController {
         name: payload.name,
         departmentId: payload.departmentId,
         description: payload.description ?? null,
+        sectionHeadId: payload.sectionHeadId ?? null,
       })
 
       return response.created({
@@ -90,9 +79,6 @@ export default class SectionsController {
     }
   }
 
-  /**
-   * Section update કરો
-   */
   async update({ params, request, response }: HttpContext) {
     try {
       const section = await Section.find(params.id)
@@ -121,6 +107,10 @@ export default class SectionsController {
         section.description = payload.description
       }
 
+      if (payload.sectionHeadId !== undefined) {
+        section.sectionHeadId = payload.sectionHeadId
+      }
+
       await section.save()
 
       return response.ok({
@@ -136,9 +126,6 @@ export default class SectionsController {
     }
   }
 
-  /**
-   * Section delete કરો
-   */
   async destroy({ params, response }: HttpContext) {
     const section = await Section.find(params.id)
     if (!section) {
@@ -149,4 +136,4 @@ export default class SectionsController {
 
     return response.ok({ success: true, message: 'Section deleted successfully' })
   }
-}   
+}

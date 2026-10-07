@@ -1,8 +1,11 @@
+import NotificationsController from '#controllers/notifications_controller'
+import ProgressController from '#controllers/progresses_controller'
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
 import DepartmentsController from '#controllers/departments_controller'
 import RolesController from '#controllers/roles_controller'
 import SectionsController from '#controllers/sections_controller'
+import DashboardController from '#controllers/dashboard_controller'
 
 const AccessTokensController = () => import('#controllers/access_tokens_controller')
 const UsersController = () => import('#controllers/users_controller')
@@ -15,9 +18,9 @@ router.get('/', () => {
 // ==================== AUTH ====================
 router
     .group(() => {
-        router.post('/register', [NewAccountController, 'store'])
+        router.post('/register', [NewAccountController, 'store']).use(middleware.auth({ guards: ['api'] }))
         router.post('/login', [AccessTokensController, 'store'])
-        router.post('/logout', [AccessTokensController, 'destroy']).use(middleware.auth())
+        router.post('/logout', [AccessTokensController, 'destroy']).use(middleware.auth({ guards: ['api'] }))
     })
     .prefix('/users')
 
@@ -32,6 +35,7 @@ router
         router.delete('/delete/:id', [DepartmentsController, 'destroy'])
     })
     .prefix('/departments')
+    .use(middleware.auth({ guards: ['api'] }))
 
 // ==================== USERS ====================
 router
@@ -43,7 +47,7 @@ router
         router.get('/section/:sectionId', [UsersController, 'bySection'])
     })
     .prefix('/users')
-    .use(middleware.auth())
+    .use(middleware.auth({ guards: ['api'] }))
 
 // ==================== ROLES ====================
 router
@@ -53,6 +57,7 @@ router
         router.put('/:roleCode', [RolesController, 'update'])
     })
     .prefix('/roles')
+    .use(middleware.auth({ guards: ['api'] }))
 
 // ==================== SECTIONS ====================
 router
@@ -65,4 +70,32 @@ router
         router.delete('/delete/:id', [SectionsController, 'destroy'])
     })
     .prefix('/sections')
-    .use(middleware.auth())
+    .use(middleware.auth({ guards: ['api'] }))
+
+// ==================== DASHBOARD ====================
+router
+    .group(() => {
+        router.get('/stats', [DashboardController, 'stats'])
+    })
+    .prefix('/dashboard')
+    .use(middleware.auth({ guards: ['api'] }))
+
+
+router
+    .group(() => {
+        router.get('/departments', [ProgressController, 'allDepartments'])
+        router.get('/department/:id', [ProgressController, 'departmentProgress'])
+        router.get('/section/:id', [ProgressController, 'sectionProgress'])
+        router.get('/user/:suid', [ProgressController, 'userProgress'])
+    })
+    .prefix('/progress')
+    .use(middleware.auth({ guards: ['api'] }))
+
+
+router
+    .group(() => {
+        router.get('/', [NotificationsController, 'index'])
+        router.put('/:id/read', [NotificationsController, 'markRead'])
+    })
+    .prefix('/notifications')
+    .use(middleware.auth({ guards: ['api'] }))

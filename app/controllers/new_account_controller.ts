@@ -1,6 +1,7 @@
 import User from '#models/user'
 import { signupValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
+import NotificationsController from '#controllers/notifications_controller'
 
 const ROLE_FIELD_REQUIREMENTS: Record<string, string[]> = {
     SUPER_ADMIN: [],
@@ -67,6 +68,21 @@ export default class NewAccountController {
                 status,
             })
 
+            // 🔴 NEW: PENDING user mate SUPER_ADMIN ne real-time notification
+            if (status === 'PENDING') {
+                try {
+                    await NotificationsController.createAndBroadcast({
+                        type: 'PERMISSION_REQUEST',
+                        title: 'New Permission Request',
+                        message: `User "${user.name}" requires your approval for access.`,
+                        targetRole: 'SUPER_ADMIN',
+                        relatedId: Number(user.suid),
+                    })
+                } catch (notifyError) {
+                    console.error('Notification broadcast failed:', notifyError)
+                }
+            }
+
             const token = await User.accessTokens.create(user)
 
             return response.status(201).json({
@@ -95,7 +111,6 @@ export default class NewAccountController {
                 })
             }
 
-            // 🎯 Validation errors ne detail sathe return karo
             if (error.messages) {
                 return response.status(422).json({
                     success: false,

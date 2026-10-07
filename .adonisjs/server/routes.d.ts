@@ -27,6 +27,13 @@ export type ScannedRoutes = {
     'sections.store': { paramsTuple?: []; params?: {} }
     'sections.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'sections.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'dashboard.stats': { paramsTuple?: []; params?: {} }
+    'progress.all_departments': { paramsTuple?: []; params?: {} }
+    'progress.department_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
+    'notifications.index': { paramsTuple?: []; params?: {} }
+    'notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'departments.index': { paramsTuple?: []; params?: {} }
@@ -39,6 +46,12 @@ export type ScannedRoutes = {
     'sections.index': { paramsTuple?: []; params?: {} }
     'sections.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'sections.by_department': { paramsTuple: [ParamValue]; params: {'departmentId': ParamValue} }
+    'dashboard.stats': { paramsTuple?: []; params?: {} }
+    'progress.all_departments': { paramsTuple?: []; params?: {} }
+    'progress.department_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
+    'notifications.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'departments.index': { paramsTuple?: []; params?: {} }
@@ -51,6 +64,12 @@ export type ScannedRoutes = {
     'sections.index': { paramsTuple?: []; params?: {} }
     'sections.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'sections.by_department': { paramsTuple: [ParamValue]; params: {'departmentId': ParamValue} }
+    'dashboard.stats': { paramsTuple?: []; params?: {} }
+    'progress.all_departments': { paramsTuple?: []; params?: {} }
+    'progress.department_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
+    'notifications.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -65,6 +84,7 @@ export type ScannedRoutes = {
     'users.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'roles.update': { paramsTuple: [ParamValue]; params: {'roleCode': ParamValue} }
     'sections.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'departments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

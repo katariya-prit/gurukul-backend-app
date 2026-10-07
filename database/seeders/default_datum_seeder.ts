@@ -4,9 +4,6 @@ import hash from '@adonisjs/core/services/hash'
 
 export default class extends BaseSeeder {
   async run() {
-    // ============================================
-    // ROLES (role_code, role_name, description, permissions)
-    // ============================================
     const roles = [
       {
         roleCode: 'HEAD100',

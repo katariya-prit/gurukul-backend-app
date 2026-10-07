@@ -13,6 +13,7 @@ export const controllers = {
   Groups: () => import('#controllers/groups_controller'),
   Lessons: () => import('#controllers/lessons_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
+  Notifications: () => import('#controllers/notifications_controller'),
   Overviews: () => import('#controllers/overviews_controller'),
   Profile: () => import('#controllers/profile_controller'),
   Progresses: () => import('#controllers/progresses_controller'),

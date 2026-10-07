@@ -151,6 +151,27 @@ export class ModuleSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class NotificationSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'isRead', 'message', 'relatedId', 'targetRole', 'title', 'type'] as const
+  $columns = NotificationSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isRead: boolean
+  @column()
+  declare message: string
+  @column()
+  declare relatedId: number | null
+  @column()
+  declare targetRole: string | null
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+}
+
 export class OverviewImageSchema extends BaseModel {
   static $columns = ['createdAt', 'description', 'id', 'publicId', 'section', 'title', 'url'] as const
   $columns = OverviewImageSchema.$columns

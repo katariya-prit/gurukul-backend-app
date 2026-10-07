@@ -283,4 +283,88 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'dashboard.stats': {
+    methods: ["GET","HEAD"]
+    pattern: '/dashboard/stats'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'progress.all_departments': {
+    methods: ["GET","HEAD"]
+    pattern: '/progress/departments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'progress.department_progress': {
+    methods: ["GET","HEAD"]
+    pattern: '/progress/department/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'progress.section_progress': {
+    methods: ["GET","HEAD"]
+    pattern: '/progress/section/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'progress.user_progress': {
+    methods: ["GET","HEAD"]
+    pattern: '/progress/user/:suid'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { suid: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'notifications.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/notifications'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'notifications.mark_read': {
+    methods: ["PUT"]
+    pattern: '/notifications/:id/read'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
 }

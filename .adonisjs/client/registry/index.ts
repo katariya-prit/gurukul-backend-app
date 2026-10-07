@@ -144,6 +144,48 @@ const routes = {
     tokens: [{"old":"/sections/delete/:id","type":0,"val":"sections","end":""},{"old":"/sections/delete/:id","type":0,"val":"delete","end":""},{"old":"/sections/delete/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['sections.destroy']['types'],
   },
+  'dashboard.stats': {
+    methods: ["GET","HEAD"],
+    pattern: '/dashboard/stats',
+    tokens: [{"old":"/dashboard/stats","type":0,"val":"dashboard","end":""},{"old":"/dashboard/stats","type":0,"val":"stats","end":""}],
+    types: placeholder as Registry['dashboard.stats']['types'],
+  },
+  'progress.all_departments': {
+    methods: ["GET","HEAD"],
+    pattern: '/progress/departments',
+    tokens: [{"old":"/progress/departments","type":0,"val":"progress","end":""},{"old":"/progress/departments","type":0,"val":"departments","end":""}],
+    types: placeholder as Registry['progress.all_departments']['types'],
+  },
+  'progress.department_progress': {
+    methods: ["GET","HEAD"],
+    pattern: '/progress/department/:id',
+    tokens: [{"old":"/progress/department/:id","type":0,"val":"progress","end":""},{"old":"/progress/department/:id","type":0,"val":"department","end":""},{"old":"/progress/department/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['progress.department_progress']['types'],
+  },
+  'progress.section_progress': {
+    methods: ["GET","HEAD"],
+    pattern: '/progress/section/:id',
+    tokens: [{"old":"/progress/section/:id","type":0,"val":"progress","end":""},{"old":"/progress/section/:id","type":0,"val":"section","end":""},{"old":"/progress/section/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['progress.section_progress']['types'],
+  },
+  'progress.user_progress': {
+    methods: ["GET","HEAD"],
+    pattern: '/progress/user/:suid',
+    tokens: [{"old":"/progress/user/:suid","type":0,"val":"progress","end":""},{"old":"/progress/user/:suid","type":0,"val":"user","end":""},{"old":"/progress/user/:suid","type":1,"val":"suid","end":""}],
+    types: placeholder as Registry['progress.user_progress']['types'],
+  },
+  'notifications.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/notifications',
+    tokens: [{"old":"/notifications","type":0,"val":"notifications","end":""}],
+    types: placeholder as Registry['notifications.index']['types'],
+  },
+  'notifications.mark_read': {
+    methods: ["PUT"],
+    pattern: '/notifications/:id/read',
+    tokens: [{"old":"/notifications/:id/read","type":0,"val":"notifications","end":""},{"old":"/notifications/:id/read","type":1,"val":"id","end":""},{"old":"/notifications/:id/read","type":0,"val":"read","end":""}],
+    types: placeholder as Registry['notifications.mark_read']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

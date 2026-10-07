@@ -15,6 +15,9 @@ export default class Section extends BaseModel {
     @column({ columnName: 'department_id' })
     declare departmentId: number
 
+    @column({ columnName: 'section_head_id' })
+    declare sectionHeadId: number | null
+
     @column()
     declare description: string | null
 
