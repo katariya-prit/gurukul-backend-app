@@ -61,19 +61,6 @@ export default class QuotesController {
             : fallback
     }
 
-    private async uploadImage(file: NonNullable<Awaited<ReturnType<
-        HttpContext['request']['file']
-    >>>) {
-        if (!file.isValid || !file.tmpPath) {
-            throw new Error('Please upload a valid image')
-        }
-
-        return cloudinary.uploader.upload(file.tmpPath, {
-            folder: 'gurukul/quotes',
-            resource_type: 'image',
-        })
-    }
-
     async createQuote({ request, response }: HttpContext) {
         const type = this.getQuoteType(request.input('type'))
         const dateValue = request.input('date') ?? request.input('event_date')
