@@ -4,8 +4,6 @@ import User from '#models/user'
 import { createDepartmentValidator, updateDepartmentValidator } from '#validators/department'
 
 export default class DepartmentsController {
-
-    // GET /departments
     // GET /departments
     public async index({ response }: HttpContext) {
         try {
@@ -17,7 +15,7 @@ export default class DepartmentsController {
                 const json = dept.toJSON()
                 return {
                     ...json,
-                    departmentHeadName: dept.departmentHead?.name || null, // 👈 field name check karo
+                    departmentHeadName: dept.departmentHead?.name || null,
                 }
             })
 
@@ -33,6 +31,7 @@ export default class DepartmentsController {
 
     // POST /departments/create
     public async store({ request, response }: HttpContext) {
+        console.log('✅ store reached, body:', request.body())
         try {
             const payload = await request.validateUsing(createDepartmentValidator)
 
@@ -49,7 +48,10 @@ export default class DepartmentsController {
             })
         } catch (error: any) {
             if (error.code === '23505') {
-                return response.status(400).json({ success: false, message: 'Department name already exists.' })
+                return response.status(400).json({
+                    success: false,
+                    message: 'Department ID or name already exists.',
+                })
             }
             if (error.code === '23503') {
                 return response.status(400).json({ success: false, message: 'Selected Department Head does not exist.' })
@@ -61,7 +63,6 @@ export default class DepartmentsController {
         }
     }
 
-    // GET /departments/:id
     // GET /departments/:id
     public async show({ params, response }: HttpContext) {
         try {
@@ -131,7 +132,8 @@ export default class DepartmentsController {
             if (error.messages) {
                 return response.status(422).json({ success: false, message: 'Validation failed', errors: error.messages })
             }
-            return response.status(404).json({ success: false, message: error.message || 'Department not found.' })
+            // 🎯 FIX: pehla 404 hatu, have 500 (unexpected error ne "not found" na kaho)
+            return response.status(500).json({ success: false, message: error.message || 'Internal Server Error' })
         }
     }
 
@@ -168,7 +170,8 @@ export default class DepartmentsController {
                 return response.status(400).json({ success: false, message: 'Invalid Department ID' })
             }
 
-            const users = await User.query().where('departmentId', deptId)
+            // 🎯 FIX: DB column name (department_id) vaparyu, baki badhi queries sathe consistent
+            const users = await User.query().where('department_id', deptId)
 
             return response.status(200).json({ success: true, data: users })
         } catch (error: any) {

@@ -88,7 +88,7 @@ export class GroupSchema extends BaseModel {
 }
 
 export class LessonSchema extends BaseModel {
-  static $columns = ['assignDepartmentId', 'assignGroupId', 'assignHeadOnly', 'assignScope', 'assignSectionId', 'assignStudentId', 'createdAt', 'createdBy', 'dateEnd', 'dateStart', 'departmentId', 'description', 'lessonId', 'lessonTitle', 'lessonType', 'mediaPublicId', 'mediaUrl', 'progressPoints', 'roleCode', 'updatedAt'] as const
+  static $columns = ['assignDepartmentId', 'assignGroupId', 'assignHeadOnly', 'assignScope', 'assignSectionId', 'assignStudentId', 'createdAt', 'createdBy', 'dateEnd', 'dateStart', 'departmentId', 'description', 'lessonId', 'lessonTitle', 'lessonType', 'mediaPublicId', 'mediaUrl', 'progressPoints', 'roleCode', 'thumbnailPublicId', 'thumbnailUrl', 'updatedAt'] as const
   $columns = LessonSchema.$columns
   @column()
   declare assignDepartmentId: number | null
@@ -128,6 +128,10 @@ export class LessonSchema extends BaseModel {
   declare progressPoints: number | null
   @column()
   declare roleCode: string | null
+  @column()
+  declare thumbnailPublicId: string | null
+  @column()
+  declare thumbnailUrl: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

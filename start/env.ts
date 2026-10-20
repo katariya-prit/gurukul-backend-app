@@ -29,6 +29,10 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_PASSWORD: Env.schema.string(),
   DB_DATABASE: Env.schema.string(),
 
+  GEMINI_API_KEY: Env.schema.string.optional(),
+  GEMINI_TEXT_MODEL: Env.schema.string.optional(),
+  GEMINI_IMAGE_MODEL: Env.schema.string.optional(),
+
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
 })

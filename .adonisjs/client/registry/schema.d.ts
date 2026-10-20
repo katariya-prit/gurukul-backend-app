@@ -67,9 +67,9 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'departments.update': {
-    methods: ["PUT"]
-    pattern: '/departments/:id'
+  'departments.users_by_department': {
+    methods: ["GET","HEAD"]
+    pattern: '/departments/:id/users'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -91,9 +91,9 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'departments.users_by_department': {
-    methods: ["GET","HEAD"]
-    pattern: '/departments/:id/users'
+  'departments.update': {
+    methods: ["PUT"]
+    pattern: '/departments/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]
@@ -115,18 +115,6 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'users.index': {
-    methods: ["GET","HEAD"]
-    pattern: '/users'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/users_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/users_controller').default['index']>>>
-    }
-  }
   'users.pending': {
     methods: ["GET","HEAD"]
     pattern: '/users/pending'
@@ -137,6 +125,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/users_controller').default['pending']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/users_controller').default['pending']>>>
+    }
+  }
+  'users.by_section': {
+    methods: ["GET","HEAD"]
+    pattern: '/users/section/:sectionId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { sectionId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/users_controller').default['bySection']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/users_controller').default['bySection']>>>
+    }
+  }
+  'users.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/users'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/users_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/users_controller').default['index']>>>
     }
   }
   'users.approve': {
@@ -161,18 +173,6 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/users_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/users_controller').default['destroy']>>>
-    }
-  }
-  'users.by_section': {
-    methods: ["GET","HEAD"]
-    pattern: '/users/section/:sectionId'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { sectionId: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/users_controller').default['bySection']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/users_controller').default['bySection']>>>
     }
   }
   'roles.index': {
@@ -211,9 +211,33 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'sections.by_department': {
+    methods: ["GET","HEAD"]
+    pattern: '/sections/department/:departmentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { departmentId: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'sections.index': {
     methods: ["GET","HEAD"]
     pattern: '/sections'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'sections.store': {
+    methods: ["POST"]
+    pattern: '/sections/create'
     types: {
       body: {}
       paramsTuple: []
@@ -230,30 +254,6 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
-  'sections.by_department': {
-    methods: ["GET","HEAD"]
-    pattern: '/sections/department/:departmentId'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { departmentId: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
-  'sections.store': {
-    methods: ["POST"]
-    pattern: '/sections/create'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
       query: {}
       response: unknown
       errorResponse: unknown
@@ -358,6 +358,246 @@ export interface Registry {
   'notifications.mark_read': {
     methods: ["PUT"]
     pattern: '/notifications/:id/read'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'groups.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/groups/list'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'groups.by_member': {
+    methods: ["GET","HEAD"]
+    pattern: '/groups/member/:suid'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { suid: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'groups.store': {
+    methods: ["POST"]
+    pattern: '/groups/create'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'groups.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/groups/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'groups.update': {
+    methods: ["PUT"]
+    pattern: '/groups/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'groups.destroy': {
+    methods: ["DELETE"]
+    pattern: '/groups/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'overviews.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/overview'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'overviews.store': {
+    methods: ["POST"]
+    pattern: '/overview/update'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'overviews.update_metadata': {
+    methods: ["PATCH"]
+    pattern: '/overview/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'overviews.destroy': {
+    methods: ["DELETE"]
+    pattern: '/overview/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'quotes.create_quote': {
+    methods: ["POST"]
+    pattern: '/quotes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'quotes.get_quotes_by_type': {
+    methods: ["GET","HEAD"]
+    pattern: '/quotes/type/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { type: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'quotes.update_quote': {
+    methods: ["PUT"]
+    pattern: '/quotes/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'quotes.delete_quote': {
+    methods: ["DELETE"]
+    pattern: '/quotes/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'upload.avatar': {
+    methods: ["POST"]
+    pattern: '/upload/avatar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'upload.section': {
+    methods: ["POST"]
+    pattern: '/upload/section'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lesson.store': {
+    methods: ["POST"]
+    pattern: '/lessons/create'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lesson.my_lessons': {
+    methods: ["GET","HEAD"]
+    pattern: '/lessons/my'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lesson.created': {
+    methods: ["GET","HEAD"]
+    pattern: '/lessons/created'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'lesson.destroy': {
+    methods: ["DELETE"]
+    pattern: '/lessons/delete/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]
