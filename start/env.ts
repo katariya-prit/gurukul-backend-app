@@ -23,11 +23,16 @@ export default await Env.create(new URL('../', import.meta.url), {
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
 
   DB_CONNECTION: Env.schema.string(),
-  DB_HOST: Env.schema.string({ format: 'host' }),
-  DB_PORT: Env.schema.number(),
-  DB_USER: Env.schema.string(),
-  DB_PASSWORD: Env.schema.string(),
-  DB_DATABASE: Env.schema.string(),
+
+  // Database fields optional rakha chhe jethi DATABASE_URL pan use thai sake
+  DB_HOST: Env.schema.string.optional({ format: 'host' }),
+  DB_PORT: Env.schema.number.optional(),
+  DB_USER: Env.schema.string.optional(),
+  DB_PASSWORD: Env.schema.string.optional(),
+  DB_DATABASE: Env.schema.string.optional(),
+
+  // Neon connection string mate
+  DATABASE_URL: Env.schema.string.optional({ format: 'url' }),
 
   GEMINI_API_KEY: Env.schema.string.optional(),
   GEMINI_TEXT_MODEL: Env.schema.string.optional(),

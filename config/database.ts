@@ -9,13 +9,18 @@ const dbConfig = defineConfig({
     pg: {
       client: 'pg',
 
-      connection: {
-        host: env.get('DB_HOST'),
-        port: env.get('DB_PORT'),
-        user: env.get('DB_USER'),
-        password: env.get('DB_PASSWORD'),
-        database: env.get('DB_DATABASE'),
-      },
+      connection: env.get('DATABASE_URL')
+        ? {
+            connectionString: env.get('DATABASE_URL'),
+            ssl: { rejectUnauthorized: false }, // Neon database mate SSL jaruri chhe
+          }
+        : {
+            host: env.get('DB_HOST'),
+            port: env.get('DB_PORT'),
+            user: env.get('DB_USER'),
+            password: env.get('DB_PASSWORD'),
+            database: env.get('DB_DATABASE'),
+          },
 
       migrations: {
         naturalSort: true,
@@ -27,4 +32,4 @@ const dbConfig = defineConfig({
   },
 })
 
-export default dbConfig 
+export default dbConfig
