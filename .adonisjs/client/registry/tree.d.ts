@@ -2,6 +2,24 @@
 import type { routes } from './index.ts'
 
 export interface ApiDefinition {
+  overviews: {
+    index: typeof routes['overviews.index']
+    store: typeof routes['overviews.store']
+    updateMetadata: typeof routes['overviews.update_metadata']
+    destroy: typeof routes['overviews.destroy']
+  }
+  quotes: {
+    getQuotesByType: typeof routes['quotes.get_quotes_by_type']
+    createQuote: typeof routes['quotes.create_quote']
+    updateQuote: typeof routes['quotes.update_quote']
+    deleteQuote: typeof routes['quotes.delete_quote']
+  }
+  dailyDarshans: {
+    index: typeof routes['daily_darshans.index']
+    store: typeof routes['daily_darshans.store']
+    update: typeof routes['daily_darshans.update']
+    destroy: typeof routes['daily_darshans.destroy']
+  }
   newAccount: {
     store: typeof routes['new_account.store']
   }
@@ -57,18 +75,6 @@ export interface ApiDefinition {
     show: typeof routes['groups.show']
     update: typeof routes['groups.update']
     destroy: typeof routes['groups.destroy']
-  }
-  overviews: {
-    index: typeof routes['overviews.index']
-    store: typeof routes['overviews.store']
-    updateMetadata: typeof routes['overviews.update_metadata']
-    destroy: typeof routes['overviews.destroy']
-  }
-  quotes: {
-    createQuote: typeof routes['quotes.create_quote']
-    getQuotesByType: typeof routes['quotes.get_quotes_by_type']
-    updateQuote: typeof routes['quotes.update_quote']
-    deleteQuote: typeof routes['quotes.delete_quote']
   }
   upload: {
     avatar: typeof routes['upload.avatar']

@@ -6,6 +6,24 @@ import type { ApiDefinition } from './tree.d.ts'
 const placeholder: any = {}
 
 const routes = {
+  'overviews.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/overview',
+    tokens: [{"old":"/overview","type":0,"val":"overview","end":""}],
+    types: placeholder as Registry['overviews.index']['types'],
+  },
+  'quotes.get_quotes_by_type': {
+    methods: ["GET","HEAD"],
+    pattern: '/quotes/type/:type',
+    tokens: [{"old":"/quotes/type/:type","type":0,"val":"quotes","end":""},{"old":"/quotes/type/:type","type":0,"val":"type","end":""},{"old":"/quotes/type/:type","type":1,"val":"type","end":""}],
+    types: placeholder as Registry['quotes.get_quotes_by_type']['types'],
+  },
+  'daily_darshans.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/daily-darshan',
+    tokens: [{"old":"/daily-darshan","type":0,"val":"daily-darshan","end":""}],
+    types: placeholder as Registry['daily_darshans.index']['types'],
+  },
   'new_account.store': {
     methods: ["POST"],
     pattern: '/users/register',
@@ -222,12 +240,6 @@ const routes = {
     tokens: [{"old":"/groups/:id","type":0,"val":"groups","end":""},{"old":"/groups/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['groups.destroy']['types'],
   },
-  'overviews.index': {
-    methods: ["GET","HEAD"],
-    pattern: '/overview',
-    tokens: [{"old":"/overview","type":0,"val":"overview","end":""}],
-    types: placeholder as Registry['overviews.index']['types'],
-  },
   'overviews.store': {
     methods: ["POST"],
     pattern: '/overview/update',
@@ -252,12 +264,6 @@ const routes = {
     tokens: [{"old":"/quotes","type":0,"val":"quotes","end":""}],
     types: placeholder as Registry['quotes.create_quote']['types'],
   },
-  'quotes.get_quotes_by_type': {
-    methods: ["GET","HEAD"],
-    pattern: '/quotes/type/:type',
-    tokens: [{"old":"/quotes/type/:type","type":0,"val":"quotes","end":""},{"old":"/quotes/type/:type","type":0,"val":"type","end":""},{"old":"/quotes/type/:type","type":1,"val":"type","end":""}],
-    types: placeholder as Registry['quotes.get_quotes_by_type']['types'],
-  },
   'quotes.update_quote': {
     methods: ["PUT"],
     pattern: '/quotes/:id',
@@ -269,6 +275,24 @@ const routes = {
     pattern: '/quotes/:id',
     tokens: [{"old":"/quotes/:id","type":0,"val":"quotes","end":""},{"old":"/quotes/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['quotes.delete_quote']['types'],
+  },
+  'daily_darshans.store': {
+    methods: ["POST"],
+    pattern: '/daily-darshan',
+    tokens: [{"old":"/daily-darshan","type":0,"val":"daily-darshan","end":""}],
+    types: placeholder as Registry['daily_darshans.store']['types'],
+  },
+  'daily_darshans.update': {
+    methods: ["PUT"],
+    pattern: '/daily-darshan/:id',
+    tokens: [{"old":"/daily-darshan/:id","type":0,"val":"daily-darshan","end":""},{"old":"/daily-darshan/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['daily_darshans.update']['types'],
+  },
+  'daily_darshans.destroy': {
+    methods: ["DELETE"],
+    pattern: '/daily-darshan/:id',
+    tokens: [{"old":"/daily-darshan/:id","type":0,"val":"daily-darshan","end":""},{"old":"/daily-darshan/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['daily_darshans.destroy']['types'],
   },
   'upload.avatar': {
     methods: ["POST"],

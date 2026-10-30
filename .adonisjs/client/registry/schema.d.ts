@@ -7,6 +7,42 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'overviews.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/overview'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'quotes.get_quotes_by_type': {
+    methods: ["GET","HEAD"]
+    pattern: '/quotes/type/:type'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { type: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'daily_darshans.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/daily-darshan'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'new_account.store': {
     methods: ["POST"]
     pattern: '/users/register'
@@ -439,18 +475,6 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'overviews.index': {
-    methods: ["GET","HEAD"]
-    pattern: '/overview'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
   'overviews.store': {
     methods: ["POST"]
     pattern: '/overview/update'
@@ -499,18 +523,6 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'quotes.get_quotes_by_type': {
-    methods: ["GET","HEAD"]
-    pattern: '/quotes/type/:type'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { type: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
   'quotes.update_quote': {
     methods: ["PUT"]
     pattern: '/quotes/:id'
@@ -526,6 +538,42 @@ export interface Registry {
   'quotes.delete_quote': {
     methods: ["DELETE"]
     pattern: '/quotes/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'daily_darshans.store': {
+    methods: ["POST"]
+    pattern: '/daily-darshan'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'daily_darshans.update': {
+    methods: ["PUT"]
+    pattern: '/daily-darshan/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'daily_darshans.destroy': {
+    methods: ["DELETE"]
+    pattern: '/daily-darshan/:id'
     types: {
       body: {}
       paramsTuple: [ParamValue]

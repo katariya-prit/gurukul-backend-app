@@ -163,7 +163,7 @@ export default class QuotesController {
         }
     }
 
-    async getQuotesByType({ request, response }: HttpContext) {
+    async getQuotesByType({ request, response, auth }: HttpContext) {
         const type = this.getQuoteType(request.param('type'))
 
         if (!type) {
@@ -172,7 +172,8 @@ export default class QuotesController {
             })
         }
 
-        const includeUnapproved = request.input('includeUnapproved') === 'true'
+        const includeUnapproved =
+            request.input('includeUnapproved') === 'true' && auth.isAuthenticated
 
         const query = Quote.query()
             .where('type', type)

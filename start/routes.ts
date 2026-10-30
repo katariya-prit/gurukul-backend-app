@@ -11,6 +11,7 @@ import SectionsController from '#controllers/sections_controller'
 import DashboardController from '#controllers/dashboard_controller'
 import UploadController from '#controllers/uploads_controller'
 import LessonController from '#controllers/lessons_controller'
+import DailyDarshansController from '#controllers/daily_darshans_controller'
 
 const AccessTokensController = () => import('#controllers/access_tokens_controller')
 const UsersController = () => import('#controllers/users_controller')
@@ -19,6 +20,10 @@ const NewAccountController = () => import('#controllers/new_account_controller')
 router.get('/', () => {
     return { success: true, message: 'Gurukul API is running' }
 })
+
+router.get('/overview', [OverviewsController, 'index'])
+router.get('/quotes/type/:type', [QuotesController, 'getQuotesByType'])
+router.get('/daily-darshan', [DailyDarshansController, 'index'])
 
 router
     .group(() => {
@@ -111,7 +116,6 @@ router
 
 router
     .group(() => {
-        router.get('/', [OverviewsController, 'index'])
         router.post('/update', [OverviewsController, 'store'])
         router.patch('/:id', [OverviewsController, 'updateMetadata'])
         router.delete('/:id', [OverviewsController, 'destroy'])
@@ -122,7 +126,6 @@ router
 router
     .group(() => {
         router.post('/', [QuotesController, 'createQuote'])
-        router.get('/type/:type', [QuotesController, 'getQuotesByType'])
         router.put('/:id', [QuotesController, 'updateQuote'])
         router.delete('/:id', [QuotesController, 'deleteQuote'])
     })
@@ -131,8 +134,17 @@ router
 
 router
     .group(() => {
+        router.post('/', [DailyDarshansController, 'store'])
+        router.put('/:id', [DailyDarshansController, 'update'])
+        router.delete('/:id', [DailyDarshansController, 'destroy'])
+    })
+    .prefix('/daily-darshan')
+    .use(middleware.auth({ guards: ['api'] }))
+
+router
+    .group(() => {
         router.post('/avatar', [UploadController, 'avatar'])
-        router.post('/section', [   UploadController, 'section'])
+        router.post('/section', [UploadController, 'section'])
     })
     .prefix('/upload')
     .use(middleware.auth({ guards: ['api'] }))
