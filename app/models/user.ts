@@ -18,4 +18,5 @@ export default class User extends compose(
     localKey: 'roleCode',
   })
   declare role: BelongsTo<typeof Role>
+    static accessTokens: any
 }
