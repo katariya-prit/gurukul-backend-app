@@ -4,10 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { errors } from '@vinejs/vine'
 
 export default class AccessTokensController {
-  async store({ request, response }: HttpContext) {
-    // Step 1: Validate input shape — these errors ARE specific
-    // (e.g. "username field is required"), since they don't leak
-    // anything about whether an account exists.
+  async store({ request, response, auth }: HttpContext) {
     let payload: { username: string; password: string }
 
     try {
@@ -27,9 +24,6 @@ export default class AccessTokensController {
       })
     }
 
-    // Step 2: Verify credentials — errors here stay GENERIC on purpose.
-    // Never reveal whether it was the username or the password that
-    // was wrong; that would let an attacker enumerate valid usernames.
     try {
       const user = await User.verifyCredentials(payload.username, payload.password)
 
@@ -41,15 +35,11 @@ export default class AccessTokensController {
       }
 
       await user.load('role')
-
-      const token = await User.accessTokens.create(user, ['*'], {
-        expiresIn: '7 days',
-      })
+      await auth.use('web').login(user)
 
       return response.status(200).json({
         success: true,
         message: 'Login successful',
-        token: token.value!.release(),
         user: {
           suid: user.suid,
           avatar: user.avatar,
@@ -66,9 +56,8 @@ export default class AccessTokensController {
           permissions: user.role?.permissions ?? {},
         },
       })
-      // access_tokens_controller.ts ma
     } catch (err) {
-      console.error('Login error:', err)  // ← TEMPORARY, debug mate
+      console.error('Login error:', err)
       return response.status(401).json({
         success: false,
         message: 'Invalid username or password',
@@ -77,11 +66,7 @@ export default class AccessTokensController {
   }
 
   async destroy({ auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
-
-    if (user.currentAccessToken) {
-      await User.accessTokens.delete(user, user.currentAccessToken.identifier)
-    }
+    await auth.use('web').logout()
 
     return response.status(200).json({
       success: true,

@@ -4,23 +4,27 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'event_stream': { paramsTuple?: []; params?: {} }
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
     'overviews.index': { paramsTuple?: []; params?: {} }
     'quotes.get_quotes_by_type': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'daily_darshans.index': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'access_tokens.store': { paramsTuple?: []; params?: {} }
     'access_tokens.destroy': { paramsTuple?: []; params?: {} }
+    'users.pending': { paramsTuple?: []; params?: {} }
+    'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
+    'users.index': { paramsTuple?: []; params?: {} }
+    'users.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'departments.index': { paramsTuple?: []; params?: {} }
     'departments.store': { paramsTuple?: []; params?: {} }
     'departments.users_by_department': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'departments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'departments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'departments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'users.pending': { paramsTuple?: []; params?: {} }
-    'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
-    'users.index': { paramsTuple?: []; params?: {} }
-    'users.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'roles.index': { paramsTuple?: []; params?: {} }
     'roles.store': { paramsTuple?: []; params?: {} }
     'roles.update': { paramsTuple: [ParamValue]; params: {'roleCode': ParamValue} }
@@ -60,15 +64,16 @@ export type ScannedRoutes = {
     'lesson.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
+    'event_stream': { paramsTuple?: []; params?: {} }
     'overviews.index': { paramsTuple?: []; params?: {} }
     'quotes.get_quotes_by_type': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'daily_darshans.index': { paramsTuple?: []; params?: {} }
-    'departments.index': { paramsTuple?: []; params?: {} }
-    'departments.users_by_department': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'departments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'users.pending': { paramsTuple?: []; params?: {} }
     'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
     'users.index': { paramsTuple?: []; params?: {} }
+    'departments.index': { paramsTuple?: []; params?: {} }
+    'departments.users_by_department': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'departments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'roles.index': { paramsTuple?: []; params?: {} }
     'sections.by_department': { paramsTuple: [ParamValue]; params: {'departmentId': ParamValue} }
     'sections.index': { paramsTuple?: []; params?: {} }
@@ -86,15 +91,16 @@ export type ScannedRoutes = {
     'lesson.created': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
+    'event_stream': { paramsTuple?: []; params?: {} }
     'overviews.index': { paramsTuple?: []; params?: {} }
     'quotes.get_quotes_by_type': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'daily_darshans.index': { paramsTuple?: []; params?: {} }
-    'departments.index': { paramsTuple?: []; params?: {} }
-    'departments.users_by_department': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'departments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'users.pending': { paramsTuple?: []; params?: {} }
     'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
     'users.index': { paramsTuple?: []; params?: {} }
+    'departments.index': { paramsTuple?: []; params?: {} }
+    'departments.users_by_department': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'departments.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'roles.index': { paramsTuple?: []; params?: {} }
     'sections.by_department': { paramsTuple: [ParamValue]; params: {'departmentId': ParamValue} }
     'sections.index': { paramsTuple?: []; params?: {} }
@@ -112,6 +118,8 @@ export type ScannedRoutes = {
     'lesson.created': { paramsTuple?: []; params?: {} }
   }
   POST: {
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'access_tokens.store': { paramsTuple?: []; params?: {} }
     'access_tokens.destroy': { paramsTuple?: []; params?: {} }
@@ -127,8 +135,9 @@ export type ScannedRoutes = {
     'lesson.store': { paramsTuple?: []; params?: {} }
   }
   PUT: {
-    'departments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'users.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'departments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'roles.update': { paramsTuple: [ParamValue]; params: {'roleCode': ParamValue} }
     'sections.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -137,8 +146,8 @@ export type ScannedRoutes = {
     'daily_darshans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
-    'departments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'departments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'sections.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'groups.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'overviews.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

@@ -6,6 +6,24 @@ import type { ApiDefinition } from './tree.d.ts'
 const placeholder: any = {}
 
 const routes = {
+  'event_stream': {
+    methods: ["GET","HEAD"],
+    pattern: '/__transmit/events',
+    tokens: [{"old":"/__transmit/events","type":0,"val":"__transmit","end":""},{"old":"/__transmit/events","type":0,"val":"events","end":""}],
+    types: placeholder as Registry['event_stream']['types'],
+  },
+  'subscribe': {
+    methods: ["POST"],
+    pattern: '/__transmit/subscribe',
+    tokens: [{"old":"/__transmit/subscribe","type":0,"val":"__transmit","end":""},{"old":"/__transmit/subscribe","type":0,"val":"subscribe","end":""}],
+    types: placeholder as Registry['subscribe']['types'],
+  },
+  'unsubscribe': {
+    methods: ["POST"],
+    pattern: '/__transmit/unsubscribe',
+    tokens: [{"old":"/__transmit/unsubscribe","type":0,"val":"__transmit","end":""},{"old":"/__transmit/unsubscribe","type":0,"val":"unsubscribe","end":""}],
+    types: placeholder as Registry['unsubscribe']['types'],
+  },
   'overviews.index': {
     methods: ["GET","HEAD"],
     pattern: '/overview',
@@ -42,6 +60,42 @@ const routes = {
     tokens: [{"old":"/users/logout","type":0,"val":"users","end":""},{"old":"/users/logout","type":0,"val":"logout","end":""}],
     types: placeholder as Registry['access_tokens.destroy']['types'],
   },
+  'users.pending': {
+    methods: ["GET","HEAD"],
+    pattern: '/users/pending',
+    tokens: [{"old":"/users/pending","type":0,"val":"users","end":""},{"old":"/users/pending","type":0,"val":"pending","end":""}],
+    types: placeholder as Registry['users.pending']['types'],
+  },
+  'users.by_section': {
+    methods: ["GET","HEAD"],
+    pattern: '/users/section/:sectionId',
+    tokens: [{"old":"/users/section/:sectionId","type":0,"val":"users","end":""},{"old":"/users/section/:sectionId","type":0,"val":"section","end":""},{"old":"/users/section/:sectionId","type":1,"val":"sectionId","end":""}],
+    types: placeholder as Registry['users.by_section']['types'],
+  },
+  'users.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/users',
+    tokens: [{"old":"/users","type":0,"val":"users","end":""}],
+    types: placeholder as Registry['users.index']['types'],
+  },
+  'users.approve': {
+    methods: ["PUT"],
+    pattern: '/users/approve/:id',
+    tokens: [{"old":"/users/approve/:id","type":0,"val":"users","end":""},{"old":"/users/approve/:id","type":0,"val":"approve","end":""},{"old":"/users/approve/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['users.approve']['types'],
+  },
+  'users.update': {
+    methods: ["PUT"],
+    pattern: '/users/:id',
+    tokens: [{"old":"/users/:id","type":0,"val":"users","end":""},{"old":"/users/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['users.update']['types'],
+  },
+  'users.destroy': {
+    methods: ["DELETE"],
+    pattern: '/users/delete/:id',
+    tokens: [{"old":"/users/delete/:id","type":0,"val":"users","end":""},{"old":"/users/delete/:id","type":0,"val":"delete","end":""},{"old":"/users/delete/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['users.destroy']['types'],
+  },
   'departments.index': {
     methods: ["GET","HEAD"],
     pattern: '/departments',
@@ -77,36 +131,6 @@ const routes = {
     pattern: '/departments/delete/:id',
     tokens: [{"old":"/departments/delete/:id","type":0,"val":"departments","end":""},{"old":"/departments/delete/:id","type":0,"val":"delete","end":""},{"old":"/departments/delete/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['departments.destroy']['types'],
-  },
-  'users.pending': {
-    methods: ["GET","HEAD"],
-    pattern: '/users/pending',
-    tokens: [{"old":"/users/pending","type":0,"val":"users","end":""},{"old":"/users/pending","type":0,"val":"pending","end":""}],
-    types: placeholder as Registry['users.pending']['types'],
-  },
-  'users.by_section': {
-    methods: ["GET","HEAD"],
-    pattern: '/users/section/:sectionId',
-    tokens: [{"old":"/users/section/:sectionId","type":0,"val":"users","end":""},{"old":"/users/section/:sectionId","type":0,"val":"section","end":""},{"old":"/users/section/:sectionId","type":1,"val":"sectionId","end":""}],
-    types: placeholder as Registry['users.by_section']['types'],
-  },
-  'users.index': {
-    methods: ["GET","HEAD"],
-    pattern: '/users',
-    tokens: [{"old":"/users","type":0,"val":"users","end":""}],
-    types: placeholder as Registry['users.index']['types'],
-  },
-  'users.approve': {
-    methods: ["PUT"],
-    pattern: '/users/approve/:id',
-    tokens: [{"old":"/users/approve/:id","type":0,"val":"users","end":""},{"old":"/users/approve/:id","type":0,"val":"approve","end":""},{"old":"/users/approve/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['users.approve']['types'],
-  },
-  'users.destroy': {
-    methods: ["DELETE"],
-    pattern: '/users/delete/:id',
-    tokens: [{"old":"/users/delete/:id","type":0,"val":"users","end":""},{"old":"/users/delete/:id","type":0,"val":"delete","end":""},{"old":"/users/delete/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['users.destroy']['types'],
   },
   'roles.index': {
     methods: ["GET","HEAD"],

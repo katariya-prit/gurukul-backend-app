@@ -8,10 +8,7 @@ export default class AuthMiddleware {
     next: NextFn,
     options: { guards?: (keyof Authenticators)[] } = {}
   ) {
-    console.log(`➡️ ${ctx.request.method()} ${ctx.request.url()}`)
-    console.log('   Authorization:', ctx.request.header('authorization') ? 'present' : 'MISSING')
-
-    await ctx.auth.authenticateUsing(options.guards ?? ['api'])
+    await ctx.auth.authenticateUsing(options.guards ?? ['web'])
     return next()
   }
 }

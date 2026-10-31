@@ -12,10 +12,13 @@ import DashboardController from '#controllers/dashboard_controller'
 import UploadController from '#controllers/uploads_controller'
 import LessonController from '#controllers/lessons_controller'
 import DailyDarshansController from '#controllers/daily_darshans_controller'
+import transmit from '@adonisjs/transmit/services/main'
 
 const AccessTokensController = () => import('#controllers/access_tokens_controller')
 const UsersController = () => import('#controllers/users_controller')
 const NewAccountController = () => import('#controllers/new_account_controller')
+
+transmit.registerRoutes()
 
 router.get('/', () => {
     return { success: true, message: 'Gurukul API is running' }
@@ -25,14 +28,29 @@ router.get('/overview', [OverviewsController, 'index'])
 router.get('/quotes/type/:type', [QuotesController, 'getQuotesByType'])
 router.get('/daily-darshan', [DailyDarshansController, 'index'])
 
+// ==================== AUTH ====================
 router
     .group(() => {
-        router.post('/register', [NewAccountController, 'store']).use(middleware.auth({ guards: ['api'] }))
+        router.post('/register', [NewAccountController, 'store']).use(middleware.auth())
         router.post('/login', [AccessTokensController, 'store'])
-        router.post('/logout', [AccessTokensController, 'destroy']).use(middleware.auth({ guards: ['api'] }))
+        router.post('/logout', [AccessTokensController, 'destroy']).use(middleware.auth())
     })
     .prefix('/users')
 
+// ==================== USERS ====================
+router
+    .group(() => {
+        router.get('/pending', [UsersController, 'pending'])
+        router.get('/section/:sectionId', [UsersController, 'bySection'])
+        router.get('/', [UsersController, 'index'])
+        router.put('/approve/:id', [UsersController, 'approve'])
+        router.put('/:id', [UsersController, 'update'])
+        router.delete('/delete/:id', [UsersController, 'destroy'])
+    })
+    .prefix('/users')
+    .use(middleware.auth())
+
+// ==================== DEPARTMENTS ====================
 router
     .group(() => {
         router.get('/', [DepartmentsController, 'index'])
@@ -43,19 +61,9 @@ router
         router.delete('/delete/:id', [DepartmentsController, 'destroy'])
     })
     .prefix('/departments')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
-router
-    .group(() => {
-        router.get('/pending', [UsersController, 'pending'])
-        router.get('/section/:sectionId', [UsersController, 'bySection'])
-        router.get('/', [UsersController, 'index'])
-        router.put('/approve/:id', [UsersController, 'approve'])
-        router.delete('/delete/:id', [UsersController, 'destroy'])
-    })
-    .prefix('/users')
-    .use(middleware.auth({ guards: ['api'] }))
-
+// ==================== ROLES ====================
 router
     .group(() => {
         router.get('/', [RolesController, 'index'])
@@ -63,8 +71,9 @@ router
         router.put('/:roleCode', [RolesController, 'update'])
     })
     .prefix('/roles')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== SECTIONS ====================
 router
     .group(() => {
         router.get('/department/:departmentId', [SectionsController, 'byDepartment'])
@@ -75,15 +84,17 @@ router
         router.delete('/delete/:id', [SectionsController, 'destroy'])
     })
     .prefix('/sections')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== DASHBOARD ====================
 router
     .group(() => {
         router.get('/stats', [DashboardController, 'stats'])
     })
     .prefix('/dashboard')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== PROGRESS ====================
 router
     .group(() => {
         router.get('/departments', [ProgressController, 'allDepartments'])
@@ -92,16 +103,18 @@ router
         router.get('/user/:suid', [ProgressController, 'userProgress'])
     })
     .prefix('/progress')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== NOTIFICATIONS ====================
 router
     .group(() => {
         router.get('/', [NotificationsController, 'index'])
         router.put('/:id/read', [NotificationsController, 'markRead'])
     })
     .prefix('/notifications')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== GROUPS ====================
 router
     .group(() => {
         router.get('/list', [GroupsController, 'index'])
@@ -112,8 +125,9 @@ router
         router.delete('/:id', [GroupsController, 'destroy'])
     })
     .prefix('/groups')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== OVERVIEW ====================
 router
     .group(() => {
         router.post('/update', [OverviewsController, 'store'])
@@ -121,8 +135,9 @@ router
         router.delete('/:id', [OverviewsController, 'destroy'])
     })
     .prefix('/overview')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== QUOTES ====================
 router
     .group(() => {
         router.post('/', [QuotesController, 'createQuote'])
@@ -130,8 +145,9 @@ router
         router.delete('/:id', [QuotesController, 'deleteQuote'])
     })
     .prefix('/quotes')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== DAILY DARSHAN ====================
 router
     .group(() => {
         router.post('/', [DailyDarshansController, 'store'])
@@ -139,16 +155,18 @@ router
         router.delete('/:id', [DailyDarshansController, 'destroy'])
     })
     .prefix('/daily-darshan')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== UPLOAD ====================
 router
     .group(() => {
         router.post('/avatar', [UploadController, 'avatar'])
         router.post('/section', [UploadController, 'section'])
     })
     .prefix('/upload')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())
 
+// ==================== LESSONS ====================
 router
     .group(() => {
         router.post('/create', [LessonController, 'store'])
@@ -157,4 +175,4 @@ router
         router.delete('/delete/:id', [LessonController, 'destroy'])
     })
     .prefix('/lessons')
-    .use(middleware.auth({ guards: ['api'] }))
+    .use(middleware.auth())

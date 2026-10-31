@@ -2,6 +2,9 @@
 import type { routes } from './index.ts'
 
 export interface ApiDefinition {
+  eventStream: typeof routes['event_stream']
+  subscribe: typeof routes['subscribe']
+  unsubscribe: typeof routes['unsubscribe']
   overviews: {
     index: typeof routes['overviews.index']
     store: typeof routes['overviews.store']
@@ -27,6 +30,14 @@ export interface ApiDefinition {
     store: typeof routes['access_tokens.store']
     destroy: typeof routes['access_tokens.destroy']
   }
+  users: {
+    pending: typeof routes['users.pending']
+    bySection: typeof routes['users.by_section']
+    index: typeof routes['users.index']
+    approve: typeof routes['users.approve']
+    update: typeof routes['users.update']
+    destroy: typeof routes['users.destroy']
+  }
   departments: {
     index: typeof routes['departments.index']
     store: typeof routes['departments.store']
@@ -34,13 +45,6 @@ export interface ApiDefinition {
     show: typeof routes['departments.show']
     update: typeof routes['departments.update']
     destroy: typeof routes['departments.destroy']
-  }
-  users: {
-    pending: typeof routes['users.pending']
-    bySection: typeof routes['users.by_section']
-    index: typeof routes['users.index']
-    approve: typeof routes['users.approve']
-    destroy: typeof routes['users.destroy']
   }
   roles: {
     index: typeof routes['roles.index']

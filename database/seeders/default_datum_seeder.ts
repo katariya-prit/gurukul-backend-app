@@ -127,10 +127,8 @@ export default class extends BaseSeeder {
 
     // ============================================
     // SUPER ADMIN USER
-    // Password hashed here manually since this is a raw insert
-    // (bypasses the User model's withAuthFinder auto-hash hook).
     // ============================================
-    const hashedPassword = await hash.make('admin123')
+    const hashedAdminPassword = await hash.make('admin123')
 
     await db.rawQuery(
       `
@@ -142,15 +140,158 @@ export default class extends BaseSeeder {
         suid: 334512,
         name: 'Super Admin',
         username: 'super-admin',
-        password: hashedPassword,
+        password: hashedAdminPassword,
         status: 'APPROVED',
         roleCode: 'SUPER_ADMIN',
       }
     )
 
     // ============================================
-    // OVERVIEW IMAGES (hero slider seed data)
+    // DEPARTMENTS, SECTIONS, HEADS & STUDENTS
     // ============================================
+
+    const getOrCreateDepartment = async (name: string): Promise<number> => {
+      const existing = await db.rawQuery(
+        `SELECT department_id FROM departments WHERE department_name = :name`,
+        { name }
+      )
+      if (existing.rows.length > 0) return existing.rows[0].department_id
+
+      const inserted = await db.rawQuery(
+        `INSERT INTO departments (department_name, description) VALUES (:name, :description) RETURNING department_id`,
+        { name, description: null }
+      )
+      return inserted.rows[0].department_id
+    }
+
+    const getOrCreateSection = async (name: string, departmentId: number): Promise<number> => {
+      const existing = await db.rawQuery(
+        `SELECT section_id FROM sections WHERE name = :name AND department_id = :departmentId`,
+        { name, departmentId }
+      )
+      if (existing.rows.length > 0) return existing.rows[0].section_id
+
+      const inserted = await db.rawQuery(
+        `INSERT INTO sections (name, department_id, description) VALUES (:name, :departmentId, :description) RETURNING section_id`,
+        { name, departmentId, description: null }
+      )
+      return inserted.rows[0].section_id
+    }
+
+    // 🔴 FIX: password have har user mate alag — plainPassword param levo, dareak call par hash thay
+    const createUser = async (user: {
+      suid: number
+      name: string
+      username: string
+      plainPassword: string
+      roleCode: string
+      departmentId?: number | null
+      sectionId?: number | null
+    }) => {
+      const hashedPassword = await hash.make(user.plainPassword)
+
+      await db.rawQuery(
+        `
+        INSERT INTO users (suid, name, username, password, joining_date, status, role_code, department_id, section_id)
+        VALUES (:suid, :name, :username, :password, CURRENT_DATE, :status, :roleCode, :departmentId, :sectionId)
+        ON CONFLICT (suid) DO NOTHING
+        `,
+        {
+          suid: user.suid,
+          name: user.name,
+          username: user.username,
+          password: hashedPassword,
+          status: 'APPROVED',
+          roleCode: user.roleCode,
+          departmentId: user.departmentId ?? null,
+          sectionId: user.sectionId ?? null,
+        }
+      )
+    }
+
+    // ---------- Departments ----------
+    const musicId = await getOrCreateDepartment('Music')
+    const gartId = await getOrCreateDepartment('G-ART')
+
+    // ---------- Sections ----------
+    const sargamId = await getOrCreateSection('Sargam', musicId)
+    const ridhamId = await getOrCreateSection('Ridham', musicId)
+    const videoEditingId = await getOrCreateSection('VideoEditing', gartId)
+    const liveId = await getOrCreateSection('Live', gartId)
+
+    // ---------- Department Heads (dareak no password alag) ----------
+    await createUser({
+      suid: 600001,
+      name: 'desai tirth',
+      username: 'tirth',
+      plainPassword: 'tirth123',
+      roleCode: 'HEAD100',
+      departmentId: musicId,
+    })
+    await db.rawQuery(`UPDATE departments SET department_head_id = :suid WHERE department_id = :id`, {
+      suid: 600001,
+      id: musicId,
+    })
+
+    await createUser({
+      suid: 600002,
+      name: 'paradava shyambhai',
+      username: 'shyambhai',
+      plainPassword: 'shyambhai123',
+      roleCode: 'HEAD100',
+      departmentId: gartId,
+    })
+    await db.rawQuery(`UPDATE departments SET department_head_id = :suid WHERE department_id = :id`, {
+      suid: 600002,
+      id: gartId,
+    })
+
+    // ---------- Section Heads (dareak no password alag) ----------
+    const sectionHeads = [
+      { suid: 610001, name: 'katariya prit', username: 'prit', plainPassword: 'prit123', departmentId: musicId, sectionId: sargamId },
+      { suid: 610002, name: 'hapaliya darshit', username: 'darshit', plainPassword: 'darshit123', departmentId: musicId, sectionId: ridhamId },
+      { suid: 610003, name: 'marakana priyank', username: 'priyank', plainPassword: 'priyank123', departmentId: gartId, sectionId: videoEditingId },
+      { suid: 610004, name: 'paradava shyambhai', username: 'shyambhai', plainPassword: 'shyambhai123', departmentId: gartId, sectionId: liveId },
+    ]
+
+    for (const head of sectionHeads) {
+      await createUser({
+        suid: head.suid,
+        name: head.name,
+        username: head.username,
+        plainPassword: head.plainPassword,
+        roleCode: 'SECHEAD101',
+        departmentId: head.departmentId,
+        sectionId: head.sectionId,
+      })
+      await db.rawQuery(`UPDATE sections SET section_head_id = :suid WHERE section_id = :id`, {
+        suid: head.suid,
+        id: head.sectionId,
+      })
+    }
+
+    // ---------- Students (4 per section — ek section na badha students no password same) ----------
+    const studentSections = [
+      { prefix: 'sargam', startSuid: 620001, departmentId: musicId, sectionId: sargamId, label: 'Sargam', plainPassword: 'Sargam@Student1' },
+      { prefix: 'ridham', startSuid: 620011, departmentId: musicId, sectionId: ridhamId, label: 'Ridham', plainPassword: 'Ridham@Student2' },
+      { prefix: 'videoediting', startSuid: 620021, departmentId: gartId, sectionId: videoEditingId, label: 'VideoEditing', plainPassword: 'Video@Student3' },
+      { prefix: 'live', startSuid: 620031, departmentId: gartId, sectionId: liveId, label: 'Live', plainPassword: 'Live@Student4' },
+    ]
+
+    for (const group of studentSections) {
+      for (let i = 1; i <= 4; i++) {
+        await createUser({
+          suid: group.startSuid + (i - 1),
+          name: `${group.label} Student ${i}`,
+          username: `${group.prefix}_student_${i}`,
+          plainPassword: group.plainPassword,
+          roleCode: 'STUDENT',
+          departmentId: group.departmentId,
+          sectionId: group.sectionId,
+        })
+      }
+    }
+
     const overviewImages = [
       {
         section: 'heroSlider',
