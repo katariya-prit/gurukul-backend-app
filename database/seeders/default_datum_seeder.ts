@@ -251,7 +251,7 @@ export default class extends BaseSeeder {
       { suid: 610001, name: 'katariya prit', username: 'prit', plainPassword: 'prit123', departmentId: musicId, sectionId: sargamId },
       { suid: 610002, name: 'hapaliya darshit', username: 'darshit', plainPassword: 'darshit123', departmentId: musicId, sectionId: ridhamId },
       { suid: 610003, name: 'marakana priyank', username: 'priyank', plainPassword: 'priyank123', departmentId: gartId, sectionId: videoEditingId },
-      { suid: 610004, name: 'paradava shyambhai', username: 'shyambhai', plainPassword: 'shyambhai123', departmentId: gartId, sectionId: liveId },
+      { suid: 610004, name: 'pokiya juhil', username: 'juhil', plainPassword: 'juhil123', departmentId: gartId, sectionId: liveId },
     ]
 
     for (const head of sectionHeads) {
