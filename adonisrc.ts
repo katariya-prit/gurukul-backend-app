@@ -53,7 +53,9 @@ export default defineConfig({
     () => import('@adonisjs/cors/cors_provider'),
     () => import('@adonisjs/auth/auth_provider'),
     () => import('#providers/api_provider'),
-    () => import('@adonisjs/transmit/transmit_provider')
+    () => import('@adonisjs/transmit/transmit_provider'),
+    () => import('@adonisjs/redis/redis_provider'),
+    () => import('@adonisjs/limiter/limiter_provider'),
   ],
 
   /*
@@ -68,7 +70,8 @@ export default defineConfig({
     () => import('#start/routes'),
     () => import('#start/kernel'),
     () => import('#start/validator'),
-    () => import('#start/transmit')
+    () => import('#start/transmit'),
+    () => import('#start/notification_routes_check'),
   ],
 
   /*

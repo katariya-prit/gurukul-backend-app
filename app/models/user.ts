@@ -5,6 +5,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Role from '#models/role'
+import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 
 export default class User extends compose(
   UserSchema,
@@ -18,5 +19,8 @@ export default class User extends compose(
     localKey: 'roleCode',
   })
   declare role: BelongsTo<typeof Role>
-    static accessTokens: any
+
+  static accessTokens = DbAccessTokensProvider.forModel(User, {
+    table: 'auth_access_tokens',
+  })
 }

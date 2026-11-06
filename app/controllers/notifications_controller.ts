@@ -1,54 +1,64 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Notification from '#models/notification'
-import transmit from '@adonisjs/transmit/services/main'
+
+function serializeNotification(notification: Notification) {
+  return {
+    id: notification.id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    link: notification.link,
+    is_read: notification.isRead,
+    created_at: notification.createdAt.toISO(),
+    entity_type: notification.entityType,
+    entity_id: notification.entityId,
+    route_key: notification.routeKey,
+  }
+}
 
 export default class NotificationsController {
-    async index({ auth, response }: HttpContext) {
-        const user = auth.user!
-        const notifications = await Notification.query()
-            .where('target_role', user.roleCode)
-            .where('is_read', false)
-            .orderBy('created_at', 'desc')
-            .limit(20)
+  async index({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const userId = String(user.suid)
+    const [notifications, unreadResult] = await Promise.all([
+      Notification.query().where('user_id', userId).orderBy('created_at', 'desc').limit(100),
+      Notification.query()
+        .where('user_id', userId)
+        .where('is_read', false)
+        .count('* as total')
+        .first(),
+    ])
 
-        return response.ok({ success: true, data: notifications })
+    return response.ok({
+      success: true,
+      data: notifications.map(serializeNotification),
+      unread_count: Number(unreadResult?.$extras.total ?? 0),
+    })
+  }
+
+  async markRead({ params, auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const notification = await Notification.query()
+      .where('id', params.id)
+      .where('user_id', String(user.suid))
+      .first()
+
+    if (!notification) {
+      return response.notFound({ success: false, message: 'Notification not found' })
     }
 
-    async markRead({ params, response }: HttpContext) {
-        const notification = await Notification.find(params.id)
-        if (!notification) {
-            return response.notFound({ success: false, message: 'Notification not found' })
-        }
-        notification.isRead = true
-        await notification.save()
-        return response.ok({ success: true })
-    }
+    notification.isRead = true
+    await notification.save()
+    return response.ok({ success: true })
+  }
 
-    static async createAndBroadcast(data: {
-        type: string
-        title: string
-        message: string
-        targetRole: string
-        relatedId?: number
-    }) {
-        const notification = await Notification.create({
-            type: data.type,
-            title: data.title,
-            message: data.message,
-            targetRole: data.targetRole,
-            relatedId: data.relatedId ?? null,
-            isRead: false,
-        })
+  async markAllRead({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await Notification.query()
+      .where('user_id', String(user.suid))
+      .where('is_read', false)
+      .update({ isRead: true })
 
-        transmit.broadcast(`notifications/${data.targetRole}`, {
-            id: notification.id,
-            type: notification.type,
-            title: notification.title,
-            message: notification.message,
-            relatedId: notification.relatedId,
-            time: notification.createdAt.toISO(),
-        })
-
-        return notification
-    }
+    return response.ok({ success: true })
+  }
 }

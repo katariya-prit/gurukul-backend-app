@@ -18,7 +18,10 @@ function calcPercentage(completed: number, total: number): number {
 }
 
 export default class ProgressController {
-  private async getGrowthTrend(departmentId?: number, sectionId?: number): Promise<GrowthTrendPoint[]> {
+  private async getGrowthTrend(
+    departmentId?: number,
+    sectionId?: number
+  ): Promise<GrowthTrendPoint[]> {
     try {
       let query = `
           SELECT 
@@ -86,17 +89,57 @@ export default class ProgressController {
     }
   }
 
-  async userProgress({ params, response }: HttpContext) {
+  private async canViewStudent(
+    roleCode: string,
+    suid: number,
+    departmentId: number | null,
+    sectionId: number | null,
+    targetSuid: number
+  ): Promise<boolean> {
+    if (roleCode === 'SUPER_ADMIN') return true
+    if (roleCode === 'STUDENT') return suid === targetSuid
+
+    const target = await db
+      .from('users')
+      .where('suid', targetSuid)
+      .where('role_code', 'STUDENT')
+      .first()
+
+    if (!target) return false
+    if (roleCode === 'HEAD100') return Number(target.department_id) === departmentId
+    if (roleCode === 'SECHEAD101') return Number(target.section_id) === sectionId
+    return false
+  }
+
+  async userProgress({ params, response, auth }: HttpContext) {
     try {
       const { suid } = await progressSuidParamValidator.validate(params)
+      const currentUser = auth.getUserOrFail()
+      const canView = await this.canViewStudent(
+        currentUser.roleCode,
+        Number(currentUser.suid),
+        currentUser.departmentId ?? null,
+        currentUser.sectionId ?? null,
+        suid
+      )
+      if (!canView) {
+        return response.forbidden({
+          success: false,
+          message: 'You cannot view progress for this user.',
+        })
+      }
+
       const data = await this.computeUserProgress(suid)
       return response.ok({ success: true, data })
     } catch (error: any) {
-      return response.notFound({ success: false, message: error.message || 'User progress not found' })
+      return response.notFound({
+        success: false,
+        message: error.message || 'User progress not found',
+      })
     }
   }
 
-  async sectionProgress({ params, response }: HttpContext) {
+  async sectionProgress({ params, response, auth }: HttpContext) {
     try {
       const { id: sectionId } = await progressIdParamValidator.validate(params)
 
@@ -108,6 +151,18 @@ export default class ProgressController {
         throw new Error('Section મળ્યું નથી.')
       }
       const section = sectionRes.rows[0]
+      const currentUser = auth.getUserOrFail()
+      const canView =
+        currentUser.roleCode === 'SUPER_ADMIN' ||
+        (currentUser.roleCode === 'HEAD100' &&
+          Number(section.department_id) === Number(currentUser.departmentId)) ||
+        (currentUser.roleCode === 'SECHEAD101' && sectionId === Number(currentUser.sectionId))
+      if (!canView) {
+        return response.forbidden({
+          success: false,
+          message: 'You cannot view progress for this section.',
+        })
+      }
 
       const usersRes = await db.rawQuery(
         `SELECT suid, name, avatar FROM users WHERE section_id = ? AND role_code = 'STUDENT' ORDER BY name ASC`,
@@ -164,11 +219,14 @@ export default class ProgressController {
 
       return response.ok({ success: true, data })
     } catch (error: any) {
-      return response.notFound({ success: false, message: error.message || 'Section progress not found' })
+      return response.notFound({
+        success: false,
+        message: error.message || 'Section progress not found',
+      })
     }
   }
 
-  async departmentProgress({ params, response }: HttpContext) {
+  async departmentProgress({ params, response, auth }: HttpContext) {
     try {
       const { id: departmentId } = await progressIdParamValidator.validate(params)
 
@@ -180,6 +238,16 @@ export default class ProgressController {
         throw new Error('Department મળ્યો નથી.')
       }
       const dept = deptRes.rows[0]
+      const currentUser = auth.getUserOrFail()
+      if (
+        currentUser.roleCode !== 'SUPER_ADMIN' &&
+        !(currentUser.roleCode === 'HEAD100' && departmentId === Number(currentUser.departmentId))
+      ) {
+        return response.forbidden({
+          success: false,
+          message: 'You cannot view progress for this department.',
+        })
+      }
 
       const sectionsRes = await db.rawQuery(
         `SELECT section_id FROM sections WHERE department_id = ? ORDER BY section_id ASC`,
@@ -268,11 +336,21 @@ export default class ProgressController {
 
       return response.ok({ success: true, data })
     } catch (error: any) {
-      return response.notFound({ success: false, message: error.message || 'Department progress not found' })
+      return response.notFound({
+        success: false,
+        message: error.message || 'Department progress not found',
+      })
     }
   }
 
-  async allDepartments({ response }: HttpContext) {
+  async allDepartments({ response, auth }: HttpContext) {
+    if (auth.getUserOrFail().roleCode !== 'SUPER_ADMIN') {
+      return response.forbidden({
+        success: false,
+        message: 'Only SUPER_ADMIN can view all departments progress.',
+      })
+    }
+
     try {
       const result = await db.rawQuery(
         `SELECT 

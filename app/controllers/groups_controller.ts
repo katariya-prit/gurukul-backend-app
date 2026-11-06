@@ -22,6 +22,23 @@ async function getCreatedByName(createdBy: number | null) {
 }
 
 export default class GroupsController {
+  async members({ response }: HttpContext) {
+    try {
+      const users = await db
+        .from('users')
+        .select('suid', 'name', 'role_code')
+        .where('status', 'APPROVED')
+        .orderBy('name', 'asc')
+
+      return response.ok({ success: true, data: users })
+    } catch (error: any) {
+      return response.internalServerError({
+        success: false,
+        message: error.message || 'Failed to fetch group members',
+      })
+    }
+  }
+
   async index({ response }: HttpContext) {
     try {
       const groupsRes = await db.rawQuery(
@@ -96,9 +113,18 @@ export default class GroupsController {
     }
   }
 
-  async byMember({ params, response }: HttpContext) {
+  async byMember({ params, auth, response }: HttpContext) {
     try {
       const suid = Number(params.suid)
+      const currentUser = auth.getUserOrFail()
+
+      if (currentUser.roleCode !== 'SUPER_ADMIN' && suid !== Number(currentUser.suid)) {
+        return response.forbidden({ success: false, message: 'You can only view your own groups.' })
+      }
+
+      if (!Number.isSafeInteger(suid) || suid <= 0) {
+        return response.badRequest({ success: false, message: 'Invalid user ID.' })
+      }
 
       const groupsRes = await db.rawQuery(
         `SELECT group_id, group_name, description, member_ids, created_by, created_at
@@ -155,7 +181,11 @@ export default class GroupsController {
       })
     } catch (error: any) {
       if (error.messages) {
-        return response.badRequest({ success: false, message: 'Validation failure', errors: error.messages })
+        return response.badRequest({
+          success: false,
+          message: 'Validation failure',
+          errors: error.messages,
+        })
       }
       return response.badRequest({
         success: false,
@@ -168,7 +198,9 @@ export default class GroupsController {
     try {
       const payload = await request.validateUsing(updateGroupValidator)
 
-      const existing = await db.rawQuery(`SELECT group_id FROM groups WHERE group_id = ?`, [params.id])
+      const existing = await db.rawQuery(`SELECT group_id FROM groups WHERE group_id = ?`, [
+        params.id,
+      ])
       if (existing.rows.length === 0) {
         return response.notFound({ success: false, message: 'Group મળ્યું નથી.' })
       }
@@ -215,7 +247,11 @@ export default class GroupsController {
       })
     } catch (error: any) {
       if (error.messages) {
-        return response.badRequest({ success: false, message: 'Validation failure', errors: error.messages })
+        return response.badRequest({
+          success: false,
+          message: 'Validation failure',
+          errors: error.messages,
+        })
       }
       return response.badRequest({
         success: false,
@@ -226,7 +262,9 @@ export default class GroupsController {
 
   async destroy({ params, response }: HttpContext) {
     try {
-      const result = await db.rawQuery(`DELETE FROM groups WHERE group_id = ? RETURNING group_id`, [params.id])
+      const result = await db.rawQuery(`DELETE FROM groups WHERE group_id = ? RETURNING group_id`, [
+        params.id,
+      ])
       if (result.rows.length === 0) {
         return response.notFound({ success: false, message: 'Group મળ્યું નથી.' })
       }

@@ -51,8 +51,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['index']>>>
     }
   }
   'quotes.get_quotes_by_type': {
@@ -63,8 +63,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { type: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['getQuotesByType']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['getQuotesByType']>>>
     }
   }
   'daily_darshans.index': {
@@ -75,8 +75,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['index']>>>
     }
   }
   'new_account.store': {
@@ -113,6 +113,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/access_tokens_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/access_tokens_controller').default['destroy']>>>
+    }
+  }
+  'profile.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/users/profile'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
     }
   }
   'users.pending': {
@@ -195,20 +207,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['index']>>>
     }
   }
   'departments.store': {
     methods: ["POST"]
     pattern: '/departments/create'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/department').createDepartmentValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/department').createDepartmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'departments.users_by_department': {
@@ -219,8 +231,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['usersByDepartment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['usersByDepartment']>>>
     }
   }
   'departments.show': {
@@ -231,20 +243,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['show']>>>
     }
   }
   'departments.update': {
     methods: ["PUT"]
     pattern: '/departments/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/department').updateDepartmentValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/department').updateDepartmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'departments.destroy': {
@@ -255,8 +267,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['destroy']>>>
     }
   }
   'roles.index': {
@@ -267,32 +279,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/roles_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/roles_controller').default['index']>>>
     }
   }
   'roles.store': {
     methods: ["POST"]
     pattern: '/roles/create'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/role').createRoleValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/role').createRoleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/roles_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/roles_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'roles.update': {
     methods: ["PUT"]
     pattern: '/roles/:roleCode'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/role').updateRoleValidator)>>
       paramsTuple: [ParamValue]
       params: { roleCode: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/role').updateRoleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/roles_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/roles_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'sections.by_department': {
@@ -303,8 +315,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { departmentId: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['byDepartment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['byDepartment']>>>
     }
   }
   'sections.index': {
@@ -315,20 +327,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['index']>>>
     }
   }
   'sections.store': {
     methods: ["POST"]
     pattern: '/sections/create'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/section').createSectionValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/section').createSectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'sections.show': {
@@ -339,20 +351,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['show']>>>
     }
   }
   'sections.update': {
     methods: ["PUT"]
     pattern: '/sections/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/section').updateSectionValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/section').updateSectionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'sections.destroy': {
@@ -363,8 +375,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['destroy']>>>
     }
   }
   'dashboard.stats': {
@@ -374,9 +386,9 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/dashboard').dashboardStatsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['stats']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['stats']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'progress.all_departments': {
@@ -387,8 +399,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['allDepartments']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['allDepartments']>>>
     }
   }
   'progress.department_progress': {
@@ -398,9 +410,9 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/progress').progressIdParamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['departmentProgress']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['departmentProgress']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'progress.section_progress': {
@@ -410,9 +422,9 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/progress').progressIdParamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['sectionProgress']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['sectionProgress']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'progress.user_progress': {
@@ -422,9 +434,9 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { suid: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/progress').progressSuidParamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['userProgress']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['userProgress']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'notifications.index': {
@@ -435,8 +447,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/notifications_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/notifications_controller').default['index']>>>
+    }
+  }
+  'notifications.mark_all_read': {
+    methods: ["PUT"]
+    pattern: '/notifications/read-all'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/notifications_controller').default['markAllRead']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/notifications_controller').default['markAllRead']>>>
     }
   }
   'notifications.mark_read': {
@@ -447,8 +471,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/notifications_controller').default['markRead']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/notifications_controller').default['markRead']>>>
+    }
+  }
+  'groups.members': {
+    methods: ["GET","HEAD"]
+    pattern: '/groups/members'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['members']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['members']>>>
     }
   }
   'groups.index': {
@@ -459,8 +495,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['index']>>>
     }
   }
   'groups.by_member': {
@@ -471,20 +507,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { suid: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['byMember']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['byMember']>>>
     }
   }
   'groups.store': {
     methods: ["POST"]
     pattern: '/groups/create'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/group').createGroupValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/group').createGroupValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'groups.show': {
@@ -495,20 +531,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['show']>>>
     }
   }
   'groups.update': {
     methods: ["PUT"]
     pattern: '/groups/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/group').updateGroupValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/group').updateGroupValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'groups.destroy': {
@@ -519,32 +555,32 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/groups_controller').default['destroy']>>>
     }
   }
   'overviews.store': {
     methods: ["POST"]
     pattern: '/overview/update'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/overview_image').createOverviewValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/overview_image').createOverviewValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'overviews.update_metadata': {
     methods: ["PATCH"]
     pattern: '/overview/:id'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#validators/overview_image').updateOverviewMetadataValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: {}
-      response: unknown
-      errorResponse: unknown
+      query: ExtractQuery<InferInput<(typeof import('#validators/overview_image').updateOverviewMetadataValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['updateMetadata']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['updateMetadata']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'overviews.destroy': {
@@ -555,8 +591,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/overviews_controller').default['destroy']>>>
     }
   }
   'quotes.create_quote': {
@@ -567,8 +603,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['createQuote']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['createQuote']>>>
     }
   }
   'quotes.update_quote': {
@@ -579,8 +615,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['updateQuote']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['updateQuote']>>>
     }
   }
   'quotes.delete_quote': {
@@ -591,8 +627,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['deleteQuote']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['deleteQuote']>>>
     }
   }
   'daily_darshans.store': {
@@ -603,8 +639,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['store']>>>
     }
   }
   'daily_darshans.update': {
@@ -615,8 +651,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['update']>>>
     }
   }
   'daily_darshans.destroy': {
@@ -627,8 +663,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daily_darshans_controller').default['destroy']>>>
     }
   }
   'upload.avatar': {
@@ -639,8 +675,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['avatar']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['avatar']>>>
     }
   }
   'upload.section': {
@@ -651,8 +687,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['section']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['section']>>>
     }
   }
   'lesson.store': {
@@ -663,8 +699,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['store']>>>
     }
   }
   'lesson.my_lessons': {
@@ -675,8 +711,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['myLessons']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['myLessons']>>>
     }
   }
   'lesson.created': {
@@ -687,8 +723,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['created']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['created']>>>
     }
   }
   'lesson.destroy': {
@@ -699,8 +735,68 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lessons_controller').default['destroy']>>>
+    }
+  }
+  'lesson_submissions.mine': {
+    methods: ["GET","HEAD"]
+    pattern: '/lessons/submissions/mine'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['mine']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['mine']>>>
+    }
+  }
+  'lesson_submissions.grade': {
+    methods: ["PUT"]
+    pattern: '/lessons/submissions/:submissionId/grade'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { submissionId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['grade']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['grade']>>>
+    }
+  }
+  'lesson_submissions.re_evaluate': {
+    methods: ["POST"]
+    pattern: '/lessons/submissions/:submissionId/re-evaluate'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { submissionId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['reEvaluate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['reEvaluate']>>>
+    }
+  }
+  'lesson_submissions.submit': {
+    methods: ["POST"]
+    pattern: '/lessons/:id/submit'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['submit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['submit']>>>
+    }
+  }
+  'lesson_submissions.for_lesson': {
+    methods: ["GET","HEAD"]
+    pattern: '/lessons/:id/submissions'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['forLesson']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['forLesson']>>>
     }
   }
 }

@@ -56,14 +56,18 @@ const formatChartRows = (rows: { bucket: string; value: string }[]) =>
   }))
 
 export default class DashboardController {
-  async stats({ request, response }: HttpContext) {
+  async stats({ request, response, auth }: HttpContext) {
     try {
       const payload = await request.validateUsing(dashboardStatsValidator, {
         data: request.qs(),
       })
 
       const range: Range = payload.range ?? 'month'
-      const { role, departmentId, sectionId, suid } = payload
+      const user = auth.getUserOrFail()
+      const role = user.roleCode
+      const departmentId = Number(user.departmentId) || undefined
+      const sectionId = Number(user.sectionId) || undefined
+      const suid = Number(user.suid)
 
       let data
 
@@ -73,23 +77,36 @@ export default class DashboardController {
           break
 
         case 'STUDENT':
-          if (!suid) {
-            return response.badRequest({ success: false, message: 'suid જરૂરી છે.' })
-          }
           data = await this.getStudentStats(suid)
           break
 
-        default:
+        case 'SECHEAD101':
           if (sectionId) {
             data = await this.getSectionHeadStats(sectionId, range)
-          } else if (departmentId) {
-            data = await this.getDepartmentHeadStats(departmentId, range)
           } else {
-            return response.badRequest({
+            return response.forbidden({
               success: false,
-              message: 'આ role માટે departmentId અથવા sectionId જરૂરી છે.',
+              message: 'Your account has no assigned section.',
             })
           }
+          break
+
+        case 'HEAD100':
+          if (departmentId) {
+            data = await this.getDepartmentHeadStats(departmentId, range)
+          } else {
+            return response.forbidden({
+              success: false,
+              message: 'Your account has no assigned department.',
+            })
+          }
+          break
+
+        default:
+          return response.forbidden({
+            success: false,
+            message: 'Your role cannot view dashboard statistics.',
+          })
       }
 
       return response.ok({ success: true, data })
@@ -112,13 +129,14 @@ export default class DashboardController {
       db.rawQuery(`SELECT COUNT(*)::int AS count FROM users WHERE status = 'PENDING'`),
     ])
 
-    const [departmentTrend, approvedUserTrend, roleTrend, pendingUserTrend, growth] = await Promise.all([
-      getCumulativeTrend('departments', 'created_at', range),
-      getCumulativeTrend('users', 'created_at', range, 'source.status = ?', ['APPROVED']),
-      getCumulativeTrend('roles', 'created_at', range),
-      getCumulativeTrend('users', 'created_at', range, 'source.status = ?', ['PENDING']),
-      getCumulativeTrend('users', 'created_at', range),
-    ])
+    const [departmentTrend, approvedUserTrend, roleTrend, pendingUserTrend, growth] =
+      await Promise.all([
+        getCumulativeTrend('departments', 'created_at', range),
+        getCumulativeTrend('users', 'created_at', range, 'source.status = ?', ['APPROVED']),
+        getCumulativeTrend('roles', 'created_at', range),
+        getCumulativeTrend('users', 'created_at', range, 'source.status = ?', ['PENDING']),
+        getCumulativeTrend('users', 'created_at', range),
+      ])
 
     const roleDistribution = await db.rawQuery(
       `SELECT r.role_code, r.role_name, COUNT(u.suid)::int AS user_count
@@ -149,10 +167,30 @@ export default class DashboardController {
 
     return {
       cards: [
-        { label: 'Total Departments', value: deptCount.rows[0].count, subLabel: 'Active Modules', trend: departmentTrend },
-        { label: 'Total Active Users', value: userCount.rows[0].count, subLabel: 'Verified Accounts', trend: approvedUserTrend },
-        { label: 'Total System Roles', value: roleCount.rows[0].count, subLabel: 'Configured Permissions', trend: roleTrend },
-        { label: 'Pending Approvals', value: pendingCount.rows[0].count, subLabel: 'Awaiting review', trend: pendingUserTrend },
+        {
+          label: 'Total Departments',
+          value: deptCount.rows[0].count,
+          subLabel: 'Active Modules',
+          trend: departmentTrend,
+        },
+        {
+          label: 'Total Active Users',
+          value: userCount.rows[0].count,
+          subLabel: 'Verified Accounts',
+          trend: approvedUserTrend,
+        },
+        {
+          label: 'Total System Roles',
+          value: roleCount.rows[0].count,
+          subLabel: 'Configured Permissions',
+          trend: roleTrend,
+        },
+        {
+          label: 'Pending Approvals',
+          value: pendingCount.rows[0].count,
+          subLabel: 'Awaiting review',
+          trend: pendingUserTrend,
+        },
       ],
       chart: growth,
       roleDistribution: roleDistribution.rows.map((r: any) => ({
@@ -177,7 +215,9 @@ export default class DashboardController {
     const interval = getIntervalClause(range)
 
     const [sectionCount, studentCount] = await Promise.all([
-      db.rawQuery(`SELECT COUNT(*)::int AS count FROM sections WHERE department_id = ?`, [departmentId]),
+      db.rawQuery(`SELECT COUNT(*)::int AS count FROM sections WHERE department_id = ?`, [
+        departmentId,
+      ]),
       db.rawQuery(
         `SELECT COUNT(*)::int AS count FROM users WHERE department_id = ? AND role_code = 'STUDENT'`,
         [departmentId]
@@ -194,7 +234,11 @@ export default class DashboardController {
 
     return {
       cards: [
-        { label: 'My Sections', value: sectionCount.rows[0].count, subLabel: 'Under this department' },
+        {
+          label: 'My Sections',
+          value: sectionCount.rows[0].count,
+          subLabel: 'Under this department',
+        },
         { label: 'My Students', value: studentCount.rows[0].count, subLabel: 'Enrolled students' },
       ],
       chart: formatChartRows(growth.rows),
@@ -219,7 +263,9 @@ export default class DashboardController {
     )
 
     return {
-      cards: [{ label: 'My Students', value: studentCount.rows[0].count, subLabel: 'In this section' }],
+      cards: [
+        { label: 'My Students', value: studentCount.rows[0].count, subLabel: 'In this section' },
+      ],
       chart: formatChartRows(growth.rows),
     }
   }
@@ -233,7 +279,9 @@ export default class DashboardController {
       : 0
 
     return {
-      cards: [{ label: 'Days Since Joining', value: daysSinceJoining, subLabel: 'Your journey so far' }],
+      cards: [
+        { label: 'Days Since Joining', value: daysSinceJoining, subLabel: 'Your journey so far' },
+      ],
       chart: [] as { label: string; value: number }[],
     }
   }

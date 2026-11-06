@@ -30,6 +30,9 @@ export interface ApiDefinition {
     store: typeof routes['access_tokens.store']
     destroy: typeof routes['access_tokens.destroy']
   }
+  profile: {
+    show: typeof routes['profile.show']
+  }
   users: {
     pending: typeof routes['users.pending']
     bySection: typeof routes['users.by_section']
@@ -70,9 +73,11 @@ export interface ApiDefinition {
   }
   notifications: {
     index: typeof routes['notifications.index']
+    markAllRead: typeof routes['notifications.mark_all_read']
     markRead: typeof routes['notifications.mark_read']
   }
   groups: {
+    members: typeof routes['groups.members']
     index: typeof routes['groups.index']
     byMember: typeof routes['groups.by_member']
     store: typeof routes['groups.store']
@@ -89,5 +94,12 @@ export interface ApiDefinition {
     myLessons: typeof routes['lesson.my_lessons']
     created: typeof routes['lesson.created']
     destroy: typeof routes['lesson.destroy']
+  }
+  lessonSubmissions: {
+    mine: typeof routes['lesson_submissions.mine']
+    grade: typeof routes['lesson_submissions.grade']
+    reEvaluate: typeof routes['lesson_submissions.re_evaluate']
+    submit: typeof routes['lesson_submissions.submit']
+    forLesson: typeof routes['lesson_submissions.for_lesson']
   }
 }

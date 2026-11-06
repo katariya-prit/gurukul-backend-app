@@ -1,9 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import OverviewImage from '#models/overview_image'
-import { createOverviewValidator, updateOverviewMetadataValidator, VALID_SECTIONS } from '#validators/overview_image'
+import {
+  createOverviewValidator,
+  updateOverviewMetadataValidator,
+  VALID_SECTIONS,
+} from '#validators/overview_image'
 
 export default class OverviewsController {
-
   // GET /overview
   public async index({ response }: HttpContext) {
     try {
@@ -46,7 +49,9 @@ export default class OverviewsController {
       })
     } catch (error: any) {
       if (error.messages) {
-        return response.status(422).json({ success: false, message: 'Validation failed', errors: error.messages })
+        return response
+          .status(422)
+          .json({ success: false, message: 'Validation failed', errors: error.messages })
       }
       return response.status(500).json({ success: false, message: error.message })
     }
@@ -74,7 +79,9 @@ export default class OverviewsController {
       return response.status(200).json({ success: true, data: image })
     } catch (error: any) {
       if (error.messages) {
-        return response.status(422).json({ success: false, message: 'Validation failed', errors: error.messages })
+        return response
+          .status(422)
+          .json({ success: false, message: 'Validation failed', errors: error.messages })
       }
       return response.status(500).json({ success: false, message: error.message })
     }

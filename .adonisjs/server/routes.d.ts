@@ -13,6 +13,7 @@ export type ScannedRoutes = {
     'new_account.store': { paramsTuple?: []; params?: {} }
     'access_tokens.store': { paramsTuple?: []; params?: {} }
     'access_tokens.destroy': { paramsTuple?: []; params?: {} }
+    'profile.show': { paramsTuple?: []; params?: {} }
     'users.pending': { paramsTuple?: []; params?: {} }
     'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
     'users.index': { paramsTuple?: []; params?: {} }
@@ -40,7 +41,9 @@ export type ScannedRoutes = {
     'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
     'notifications.index': { paramsTuple?: []; params?: {} }
+    'notifications.mark_all_read': { paramsTuple?: []; params?: {} }
     'notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'groups.members': { paramsTuple?: []; params?: {} }
     'groups.index': { paramsTuple?: []; params?: {} }
     'groups.by_member': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
     'groups.store': { paramsTuple?: []; params?: {} }
@@ -62,12 +65,18 @@ export type ScannedRoutes = {
     'lesson.my_lessons': { paramsTuple?: []; params?: {} }
     'lesson.created': { paramsTuple?: []; params?: {} }
     'lesson.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lesson_submissions.mine': { paramsTuple?: []; params?: {} }
+    'lesson_submissions.grade': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
+    'lesson_submissions.re_evaluate': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
+    'lesson_submissions.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lesson_submissions.for_lesson': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'event_stream': { paramsTuple?: []; params?: {} }
     'overviews.index': { paramsTuple?: []; params?: {} }
     'quotes.get_quotes_by_type': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'daily_darshans.index': { paramsTuple?: []; params?: {} }
+    'profile.show': { paramsTuple?: []; params?: {} }
     'users.pending': { paramsTuple?: []; params?: {} }
     'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
     'users.index': { paramsTuple?: []; params?: {} }
@@ -84,17 +93,21 @@ export type ScannedRoutes = {
     'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
     'notifications.index': { paramsTuple?: []; params?: {} }
+    'groups.members': { paramsTuple?: []; params?: {} }
     'groups.index': { paramsTuple?: []; params?: {} }
     'groups.by_member': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
     'groups.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lesson.my_lessons': { paramsTuple?: []; params?: {} }
     'lesson.created': { paramsTuple?: []; params?: {} }
+    'lesson_submissions.mine': { paramsTuple?: []; params?: {} }
+    'lesson_submissions.for_lesson': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'event_stream': { paramsTuple?: []; params?: {} }
     'overviews.index': { paramsTuple?: []; params?: {} }
     'quotes.get_quotes_by_type': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'daily_darshans.index': { paramsTuple?: []; params?: {} }
+    'profile.show': { paramsTuple?: []; params?: {} }
     'users.pending': { paramsTuple?: []; params?: {} }
     'users.by_section': { paramsTuple: [ParamValue]; params: {'sectionId': ParamValue} }
     'users.index': { paramsTuple?: []; params?: {} }
@@ -111,11 +124,14 @@ export type ScannedRoutes = {
     'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
     'notifications.index': { paramsTuple?: []; params?: {} }
+    'groups.members': { paramsTuple?: []; params?: {} }
     'groups.index': { paramsTuple?: []; params?: {} }
     'groups.by_member': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
     'groups.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lesson.my_lessons': { paramsTuple?: []; params?: {} }
     'lesson.created': { paramsTuple?: []; params?: {} }
+    'lesson_submissions.mine': { paramsTuple?: []; params?: {} }
+    'lesson_submissions.for_lesson': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -133,6 +149,8 @@ export type ScannedRoutes = {
     'upload.avatar': { paramsTuple?: []; params?: {} }
     'upload.section': { paramsTuple?: []; params?: {} }
     'lesson.store': { paramsTuple?: []; params?: {} }
+    'lesson_submissions.re_evaluate': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
+    'lesson_submissions.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'users.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -140,10 +158,12 @@ export type ScannedRoutes = {
     'departments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'roles.update': { paramsTuple: [ParamValue]; params: {'roleCode': ParamValue} }
     'sections.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'notifications.mark_all_read': { paramsTuple?: []; params?: {} }
     'notifications.mark_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'groups.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'quotes.update_quote': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'daily_darshans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'lesson_submissions.grade': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
   }
   DELETE: {
     'users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

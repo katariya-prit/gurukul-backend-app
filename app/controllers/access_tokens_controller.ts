@@ -36,10 +36,12 @@ export default class AccessTokensController {
 
       await user.load('role')
       await auth.use('web').login(user)
+      const token = await User.accessTokens.create(user)
 
       return response.status(200).json({
         success: true,
         message: 'Login successful',
+        token: token.value!.release(),
         user: {
           suid: user.suid,
           avatar: user.avatar,
@@ -66,7 +68,7 @@ export default class AccessTokensController {
   }
 
   async destroy({ auth, response }: HttpContext) {
-    await auth.use('web').logout()
+    await auth.use('api').invalidateToken()
 
     return response.status(200).json({
       success: true,

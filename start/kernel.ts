@@ -15,10 +15,12 @@ router.use([
   () => import('@adonisjs/shield/shield_middleware'),
   () => import('@adonisjs/auth/initialize_auth_middleware'),
   () => import('#middleware/silent_auth_middleware'),
+  () => import('#middleware/route_notifications_middleware'),
 ])
 
 export const middleware = router.named({
   ensureApproved: () => import('#middleware/ensure_approved_middleware'),
   roleCheck: () => import('#middleware/role_check_middleware'),
   auth: () => import('#middleware/auth_middleware'),
+  permission: () => import('#middleware/permission_middleware'),
 })

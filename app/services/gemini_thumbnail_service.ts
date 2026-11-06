@@ -55,7 +55,8 @@ export default class GeminiThumbnailService {
     mimeType: string,
     lessonTitle?: string
   ): Promise<string | null> {
-    const audioBase64 = (await readFile(audioPath)).toString('base64')
+    const audioFile = await readFile(audioPath)
+    const audioBase64 = audioFile.toString('base64')
 
     const instruction = [
       'Listen to this audio lesson.',

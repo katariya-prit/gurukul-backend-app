@@ -4,12 +4,34 @@ import env from '#start/env'
 const corsConfig = defineConfig({
   enabled: true,
 
-  // Local ane production banne origins allow karva mate
-  origin: [
-    'http://localhost:5173',
-    'https://gurukul-flame.vercel.app',
-    env.get('FRONTEND_URL', ''), // Environment variable thi override karvu hoy to pan chale
-  ].filter(Boolean), // Empty values remove karva mate
+  origin: (origin: string) => {
+    if (!origin) return true
+
+    if (
+      origin.startsWith('http://localhost:') ||
+      origin.startsWith('http://127.0.0.1:') ||
+      origin === 'http://localhost' ||
+      origin === 'http://127.0.0.1' ||
+      origin === 'https://gurukul-flame.vercel.app'
+    ) {
+      return true
+    }
+
+    const frontendUrl = env.get('FRONTEND_URL')
+    if (frontendUrl && origin === frontendUrl) {
+      return true
+    }
+
+    const corsOriginEnv = env.get('CORS_ORIGIN')
+    if (corsOriginEnv) {
+      const allowed = corsOriginEnv.split(',').map((o) => o.trim())
+      if (allowed.includes(origin)) {
+        return true
+      }
+    }
+
+    return false
+  },
 
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH'],
 

@@ -1,31 +1,29 @@
 import { Env } from '@adonisjs/core/env'
 
 export default await Env.create(new URL('../', import.meta.url), {
-  // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
   PORT: Env.schema.number(),
   HOST: Env.schema.string({ format: 'host' }),
   LOG_LEVEL: Env.schema.string(),
-
-  // App
   APP_KEY: Env.schema.secret(),
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
-
   DB_CONNECTION: Env.schema.string(),
-
   DB_HOST: Env.schema.string.optional({ format: 'host' }),
   DB_PORT: Env.schema.number.optional(),
   DB_USER: Env.schema.string.optional(),
   DB_PASSWORD: Env.schema.string.optional(),
   DB_DATABASE: Env.schema.string.optional(),
-
-  // Ahiya 'format: 'url'' hatavi didhu che
   DATABASE_URL: Env.schema.string.optional(),
-
   GEMINI_API_KEY: Env.schema.string.optional(),
   GEMINI_TEXT_MODEL: Env.schema.string.optional(),
   GEMINI_IMAGE_MODEL: Env.schema.string.optional(),
-
-  // Session
+  GEMINI_EVAL_MODEL: Env.schema.string.optional(),
+  AI_FEEDBACK_LANGUAGE: Env.schema.string.optional(),
+  AI_EVAL_CONCURRENCY: Env.schema.number.optional(),
+  AI_MAX_EVALS_PER_DAY: Env.schema.number.optional(),
+  FRONTEND_URL: Env.schema.string.optional(),
+  CORS_ORIGIN: Env.schema.string.optional(),
+  CHAT_RATE_PER_MINUTE: Env.schema.number.optional(),
+  REDIS_URL: Env.schema.string.optional(),
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
 })

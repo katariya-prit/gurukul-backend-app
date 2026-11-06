@@ -60,6 +60,12 @@ const routes = {
     tokens: [{"old":"/users/logout","type":0,"val":"users","end":""},{"old":"/users/logout","type":0,"val":"logout","end":""}],
     types: placeholder as Registry['access_tokens.destroy']['types'],
   },
+  'profile.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/users/profile',
+    tokens: [{"old":"/users/profile","type":0,"val":"users","end":""},{"old":"/users/profile","type":0,"val":"profile","end":""}],
+    types: placeholder as Registry['profile.show']['types'],
+  },
   'users.pending': {
     methods: ["GET","HEAD"],
     pattern: '/users/pending',
@@ -222,11 +228,23 @@ const routes = {
     tokens: [{"old":"/notifications","type":0,"val":"notifications","end":""}],
     types: placeholder as Registry['notifications.index']['types'],
   },
+  'notifications.mark_all_read': {
+    methods: ["PUT"],
+    pattern: '/notifications/read-all',
+    tokens: [{"old":"/notifications/read-all","type":0,"val":"notifications","end":""},{"old":"/notifications/read-all","type":0,"val":"read-all","end":""}],
+    types: placeholder as Registry['notifications.mark_all_read']['types'],
+  },
   'notifications.mark_read': {
     methods: ["PUT"],
     pattern: '/notifications/:id/read',
     tokens: [{"old":"/notifications/:id/read","type":0,"val":"notifications","end":""},{"old":"/notifications/:id/read","type":1,"val":"id","end":""},{"old":"/notifications/:id/read","type":0,"val":"read","end":""}],
     types: placeholder as Registry['notifications.mark_read']['types'],
+  },
+  'groups.members': {
+    methods: ["GET","HEAD"],
+    pattern: '/groups/members',
+    tokens: [{"old":"/groups/members","type":0,"val":"groups","end":""},{"old":"/groups/members","type":0,"val":"members","end":""}],
+    types: placeholder as Registry['groups.members']['types'],
   },
   'groups.index': {
     methods: ["GET","HEAD"],
@@ -353,6 +371,36 @@ const routes = {
     pattern: '/lessons/delete/:id',
     tokens: [{"old":"/lessons/delete/:id","type":0,"val":"lessons","end":""},{"old":"/lessons/delete/:id","type":0,"val":"delete","end":""},{"old":"/lessons/delete/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['lesson.destroy']['types'],
+  },
+  'lesson_submissions.mine': {
+    methods: ["GET","HEAD"],
+    pattern: '/lessons/submissions/mine',
+    tokens: [{"old":"/lessons/submissions/mine","type":0,"val":"lessons","end":""},{"old":"/lessons/submissions/mine","type":0,"val":"submissions","end":""},{"old":"/lessons/submissions/mine","type":0,"val":"mine","end":""}],
+    types: placeholder as Registry['lesson_submissions.mine']['types'],
+  },
+  'lesson_submissions.grade': {
+    methods: ["PUT"],
+    pattern: '/lessons/submissions/:submissionId/grade',
+    tokens: [{"old":"/lessons/submissions/:submissionId/grade","type":0,"val":"lessons","end":""},{"old":"/lessons/submissions/:submissionId/grade","type":0,"val":"submissions","end":""},{"old":"/lessons/submissions/:submissionId/grade","type":1,"val":"submissionId","end":""},{"old":"/lessons/submissions/:submissionId/grade","type":0,"val":"grade","end":""}],
+    types: placeholder as Registry['lesson_submissions.grade']['types'],
+  },
+  'lesson_submissions.re_evaluate': {
+    methods: ["POST"],
+    pattern: '/lessons/submissions/:submissionId/re-evaluate',
+    tokens: [{"old":"/lessons/submissions/:submissionId/re-evaluate","type":0,"val":"lessons","end":""},{"old":"/lessons/submissions/:submissionId/re-evaluate","type":0,"val":"submissions","end":""},{"old":"/lessons/submissions/:submissionId/re-evaluate","type":1,"val":"submissionId","end":""},{"old":"/lessons/submissions/:submissionId/re-evaluate","type":0,"val":"re-evaluate","end":""}],
+    types: placeholder as Registry['lesson_submissions.re_evaluate']['types'],
+  },
+  'lesson_submissions.submit': {
+    methods: ["POST"],
+    pattern: '/lessons/:id/submit',
+    tokens: [{"old":"/lessons/:id/submit","type":0,"val":"lessons","end":""},{"old":"/lessons/:id/submit","type":1,"val":"id","end":""},{"old":"/lessons/:id/submit","type":0,"val":"submit","end":""}],
+    types: placeholder as Registry['lesson_submissions.submit']['types'],
+  },
+  'lesson_submissions.for_lesson': {
+    methods: ["GET","HEAD"],
+    pattern: '/lessons/:id/submissions',
+    tokens: [{"old":"/lessons/:id/submissions","type":0,"val":"lessons","end":""},{"old":"/lessons/:id/submissions","type":1,"val":"id","end":""},{"old":"/lessons/:id/submissions","type":0,"val":"submissions","end":""}],
+    types: placeholder as Registry['lesson_submissions.for_lesson']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

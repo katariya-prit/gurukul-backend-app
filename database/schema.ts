@@ -87,6 +87,47 @@ export class GroupSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class LessonSubmissionSchema extends BaseModel {
+  static $columns = ['aiError', 'aiPercent', 'aiPoints', 'aiResult', 'aiStatus', 'createdAt', 'finalPoints', 'lessonId', 'mediaPublicId', 'mediaUrl', 'needsReview', 'skipReason', 'source', 'studentId', 'submissionId', 'teacherFeedback', 'teacherPoints', 'updatedAt'] as const
+  $columns = LessonSubmissionSchema.$columns
+  @column()
+  declare aiError: string | null
+  @column()
+  declare aiPercent: number | null
+  @column()
+  declare aiPoints: number | null
+  @column()
+  declare aiResult: any | null
+  @column()
+  declare aiStatus: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare finalPoints: number | null
+  @column()
+  declare lessonId: number
+  @column()
+  declare mediaPublicId: string
+  @column()
+  declare mediaUrl: string
+  @column()
+  declare needsReview: boolean
+  @column()
+  declare skipReason: string | null
+  @column()
+  declare source: string
+  @column()
+  declare studentId: bigint | number
+  @column({ isPrimary: true })
+  declare submissionId: number
+  @column()
+  declare teacherFeedback: string | null
+  @column()
+  declare teacherPoints: number | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class LessonSchema extends BaseModel {
   static $columns = ['assignDepartmentId', 'assignGroupId', 'assignHeadOnly', 'assignScope', 'assignSectionId', 'assignStudentId', 'createdAt', 'createdBy', 'dateEnd', 'dateStart', 'departmentId', 'description', 'lessonId', 'lessonTitle', 'lessonType', 'mediaPublicId', 'mediaUrl', 'progressPoints', 'roleCode', 'thumbnailPublicId', 'thumbnailUrl', 'updatedAt'] as const
   $columns = LessonSchema.$columns
@@ -156,24 +197,38 @@ export class ModuleSchema extends BaseModel {
 }
 
 export class NotificationSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'isRead', 'message', 'relatedId', 'targetRole', 'title', 'type'] as const
+  static $columns = ['actorId', 'createdAt', 'entityId', 'entityType', 'id', 'isRead', 'link', 'message', 'meta', 'relatedId', 'routeKey', 'targetRole', 'title', 'type', 'userId'] as const
   $columns = NotificationSchema.$columns
+  @column()
+  declare actorId: bigint | number | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column()
+  declare entityId: string | null
+  @column()
+  declare entityType: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
   declare isRead: boolean
   @column()
+  declare link: string | null
+  @column()
   declare message: string
   @column()
+  declare meta: any | null
+  @column()
   declare relatedId: number | null
+  @column()
+  declare routeKey: string | null
   @column()
   declare targetRole: string | null
   @column()
   declare title: string
   @column()
   declare type: string
+  @column()
+  declare userId: bigint | number | null
 }
 
 export class OverviewImageSchema extends BaseModel {

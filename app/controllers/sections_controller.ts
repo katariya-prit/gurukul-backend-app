@@ -4,12 +4,32 @@ import Department from '#models/department'
 import { createSectionValidator, updateSectionValidator } from '#validators/section'
 
 export default class SectionsController {
-  async index({ response }: HttpContext) {
+  async index({ response, auth }: HttpContext) {
     try {
-      const sections = await Section.query()
-        .preload('department')
-        .orderBy('section_id', 'asc')
+      const currentUser = auth.getUserOrFail()
+      const query = Section.query().preload('department').orderBy('section_id', 'asc')
 
+      if (currentUser.roleCode === 'SUPER_ADMIN') {
+        return response.ok({ success: true, data: await query })
+      }
+
+      if (
+        !['HEAD100', 'SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) ||
+        !currentUser.departmentId ||
+        (['SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) && !currentUser.sectionId)
+      ) {
+        return response.forbidden({
+          success: false,
+          message: 'You cannot view sections outside your assigned scope.',
+        })
+      }
+
+      query.where('departmentId', currentUser.departmentId)
+      if (['SECHEAD101', 'STUDENT'].includes(currentUser.roleCode)) {
+        query.where('sectionId', currentUser.sectionId!)
+      }
+
+      const sections = await query
       return response.ok({ success: true, data: sections })
     } catch (error: any) {
       return response.internalServerError({
@@ -19,7 +39,7 @@ export default class SectionsController {
     }
   }
 
-  async show({ params, response }: HttpContext) {
+  async show({ params, response, auth }: HttpContext) {
     const section = await Section.query()
       .where('section_id', params.id)
       .preload('department')
@@ -29,14 +49,47 @@ export default class SectionsController {
       return response.notFound({ success: false, message: 'Section not found' })
     }
 
+    const currentUser = auth.getUserOrFail()
+    const canView =
+      currentUser.roleCode === 'SUPER_ADMIN' ||
+      (currentUser.roleCode === 'HEAD100' &&
+        Number(section.departmentId) === Number(currentUser.departmentId)) ||
+      (['SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) &&
+        Number(section.sectionId) === Number(currentUser.sectionId))
+
+    if (!canView) {
+      return response.forbidden({
+        success: false,
+        message: 'You cannot view sections outside your assigned scope.',
+      })
+    }
+
     return response.ok({ success: true, data: section })
   }
 
-  async byDepartment({ params, response }: HttpContext) {
+  async byDepartment({ params, response, auth }: HttpContext) {
     try {
-      const sections = await Section.query()
-        .where('department_id', params.departmentId)
-        .preload('department')
+      const departmentId = Number(params.departmentId)
+      const currentUser = auth.getUserOrFail()
+      const canView =
+        currentUser.roleCode === 'SUPER_ADMIN' ||
+        (['HEAD100', 'SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) &&
+          departmentId === Number(currentUser.departmentId) &&
+          (!['SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) ||
+            Boolean(currentUser.sectionId)))
+
+      if (!canView) {
+        return response.forbidden({
+          success: false,
+          message: 'You cannot view sections outside your assigned scope.',
+        })
+      }
+
+      const query = Section.query().where('departmentId', departmentId).preload('department')
+      if (['SECHEAD101', 'STUDENT'].includes(currentUser.roleCode)) {
+        query.where('sectionId', currentUser.sectionId!)
+      }
+      const sections = await query
 
       return response.ok({ success: true, data: sections })
     } catch (error: any) {
