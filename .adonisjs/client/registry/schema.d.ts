@@ -403,6 +403,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['allDepartments']>>>
     }
   }
+  'progress.lesson_growth': {
+    methods: ["GET","HEAD"]
+    pattern: '/progress/lessons/growth'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/lesson_progress').lessonGrowthQueryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['lessonGrowth']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/progresses_controller').default['lessonGrowth']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'progress.department_progress': {
     methods: ["GET","HEAD"]
     pattern: '/progress/department/:id'

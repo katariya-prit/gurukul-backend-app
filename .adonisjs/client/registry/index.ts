@@ -204,6 +204,12 @@ const routes = {
     tokens: [{"old":"/progress/departments","type":0,"val":"progress","end":""},{"old":"/progress/departments","type":0,"val":"departments","end":""}],
     types: placeholder as Registry['progress.all_departments']['types'],
   },
+  'progress.lesson_growth': {
+    methods: ["GET","HEAD"],
+    pattern: '/progress/lessons/growth',
+    tokens: [{"old":"/progress/lessons/growth","type":0,"val":"progress","end":""},{"old":"/progress/lessons/growth","type":0,"val":"lessons","end":""},{"old":"/progress/lessons/growth","type":0,"val":"growth","end":""}],
+    types: placeholder as Registry['progress.lesson_growth']['types'],
+  },
   'progress.department_progress': {
     methods: ["GET","HEAD"],
     pattern: '/progress/department/:id',

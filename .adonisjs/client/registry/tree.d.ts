@@ -67,6 +67,7 @@ export interface ApiDefinition {
   }
   progress: {
     allDepartments: typeof routes['progress.all_departments']
+    lessonGrowth: typeof routes['progress.lesson_growth']
     departmentProgress: typeof routes['progress.department_progress']
     sectionProgress: typeof routes['progress.section_progress']
     userProgress: typeof routes['progress.user_progress']

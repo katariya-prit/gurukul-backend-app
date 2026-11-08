@@ -1,8 +1,20 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
+import type User from '#models/user'
 import { progressIdParamValidator, progressSuidParamValidator } from '#validators/progress'
+import { lessonGrowthQueryValidator } from '#validators/lesson_progress'
+import LessonProgressService, {
+  emptyLessonStats,
+  mergeLessonStats,
+  type LessonStats,
+  type StudentLessonItem,
+} from '#services/lesson_progress_service'
 
 type GrowthTrendPoint = { date: string; newEnrollments: number; totalActive: number }
+
+type StudentRow = { suid: number; name: string; avatar: string | null }
+type SectionRow = { section_id: number; name: string; department_id: number }
+
 type UserProgressData = {
   suid: number
   name: string
@@ -10,14 +22,37 @@ type UserProgressData = {
   totalTasks: number
   completedTasks: number
   percentage: number
-}
+  overallPercentage: number
+} & LessonStats
+
+type SectionProgressData = {
+  section_id: number
+  name: string
+  department_id: number
+  totalTasks: number
+  completedTasks: number
+  percentage: number
+  overallPercentage: number
+  users: UserProgressData[]
+  studentCount: number
+  growthTrend: GrowthTrendPoint[]
+} & LessonStats
 
 function calcPercentage(completed: number, total: number): number {
   if (total === 0) return 0
   return Math.round((completed / total) * 100)
 }
 
+function overall(completedTasks: number, totalTasks: number, lesson: LessonStats): number {
+  return calcPercentage(
+    completedTasks + lesson.submittedLessons,
+    totalTasks + lesson.totalLessons
+  )
+}
+
 export default class ProgressController {
+  private lessons = new LessonProgressService()
+
   private async getGrowthTrend(
     departmentId?: number,
     sectionId?: number
@@ -46,8 +81,8 @@ export default class ProgressController {
           ORDER BY DATE(u.joining_date) ASC`
 
       const params: number[] = []
-      if (departmentId && !sectionId) params.push(departmentId)
-      if (sectionId) params.push(sectionId)
+      if (departmentId && !sectionId) params.push(departmentId, departmentId)
+      if (sectionId) params.push(sectionId, sectionId)
 
       const result = await db.rawQuery(query, params)
       return (result.rows as any[]).map((row) => ({
@@ -61,13 +96,7 @@ export default class ProgressController {
     }
   }
 
-  private async computeUserProgress(suid: number): Promise<UserProgressData> {
-    const userRes = await db.rawQuery(`SELECT suid, name, avatar FROM users WHERE suid = ?`, [suid])
-    if (userRes.rows.length === 0) {
-      throw new Error('User મળ્યો નથી.')
-    }
-    const user = userRes.rows[0]
-
+  private async countTasks(suid: number): Promise<{ total: number; completed: number }> {
     const taskRes = await db.rawQuery(
       `SELECT 
           COUNT(*) AS total,
@@ -75,9 +104,23 @@ export default class ProgressController {
        FROM tasks WHERE assigned_to = ?`,
       [suid]
     )
+    return {
+      total: Number(taskRes.rows[0].total),
+      completed: Number(taskRes.rows[0].completed),
+    }
+  }
 
-    const total = Number(taskRes.rows[0].total)
-    const completed = Number(taskRes.rows[0].completed)
+  private async computeUserProgress(
+    suid: number
+  ): Promise<UserProgressData & { lessons: StudentLessonItem[] }> {
+    const userRes = await db.rawQuery(`SELECT suid, name, avatar FROM users WHERE suid = ?`, [suid])
+    if (userRes.rows.length === 0) {
+      throw new Error('User મળ્યો નથી.')
+    }
+    const user = userRes.rows[0]
+
+    const { total, completed } = await this.countTasks(suid)
+    const detail = await this.lessons.studentDetail(suid)
 
     return {
       suid: user.suid,
@@ -86,6 +129,63 @@ export default class ProgressController {
       totalTasks: total,
       completedTasks: completed,
       percentage: calcPercentage(completed, total),
+      overallPercentage: overall(completed, total, detail.stats),
+      ...detail.stats,
+      lessons: detail.items,
+    }
+  }
+
+  private async fetchSectionStudents(sectionId: number): Promise<StudentRow[]> {
+    const res = await db.rawQuery(
+      `SELECT suid, name, avatar FROM users WHERE section_id = ? AND role_code = 'STUDENT' ORDER BY name ASC`,
+      [sectionId]
+    )
+    return res.rows as StudentRow[]
+  }
+
+  private async buildSection(
+    section: SectionRow,
+    students: StudentRow[],
+    lessonStats: Map<number, LessonStats>
+  ): Promise<SectionProgressData> {
+    const users: UserProgressData[] = []
+    let sectionTotal = 0
+    let sectionCompleted = 0
+
+    for (const student of students) {
+      const { total, completed } = await this.countTasks(student.suid)
+      const lesson = lessonStats.get(Number(student.suid)) ?? emptyLessonStats()
+
+      sectionTotal += total
+      sectionCompleted += completed
+
+      users.push({
+        suid: student.suid,
+        name: student.name,
+        avatar: student.avatar,
+        totalTasks: total,
+        completedTasks: completed,
+        percentage: calcPercentage(completed, total),
+        overallPercentage: overall(completed, total, lesson),
+        ...lesson,
+      })
+    }
+
+    const lessonTotals = mergeLessonStats(users)
+    const growthTrend = await this.getGrowthTrend(undefined, section.section_id)
+
+    return {
+      section_id: section.section_id,
+      name: section.name,
+      department_id: section.department_id,
+      totalTasks: sectionTotal,
+      completedTasks: sectionCompleted,
+      percentage: calcPercentage(sectionCompleted, sectionTotal),
+      overallPercentage: overall(sectionCompleted, sectionTotal, lessonTotals),
+      ...lessonTotals,
+      users,
+      studentCount: students.length,
+      growthTrend,
     }
   }
 
@@ -109,6 +209,22 @@ export default class ProgressController {
     if (roleCode === 'HEAD100') return Number(target.department_id) === departmentId
     if (roleCode === 'SECHEAD101') return Number(target.section_id) === sectionId
     return false
+  }
+
+  private canViewSection(user: User, section: SectionRow): boolean {
+    return (
+      user.roleCode === 'SUPER_ADMIN' ||
+      (user.roleCode === 'HEAD100' &&
+        Number(section.department_id) === Number(user.departmentId)) ||
+      (user.roleCode === 'SECHEAD101' && Number(section.section_id) === Number(user.sectionId))
+    )
+  }
+
+  private canViewDepartment(user: User, departmentId: number): boolean {
+    return (
+      user.roleCode === 'SUPER_ADMIN' ||
+      (user.roleCode === 'HEAD100' && departmentId === Number(user.departmentId))
+    )
   }
 
   async userProgress({ params, response, auth }: HttpContext) {
@@ -150,72 +266,18 @@ export default class ProgressController {
       if (sectionRes.rows.length === 0) {
         throw new Error('Section મળ્યું નથી.')
       }
-      const section = sectionRes.rows[0]
-      const currentUser = auth.getUserOrFail()
-      const canView =
-        currentUser.roleCode === 'SUPER_ADMIN' ||
-        (currentUser.roleCode === 'HEAD100' &&
-          Number(section.department_id) === Number(currentUser.departmentId)) ||
-        (currentUser.roleCode === 'SECHEAD101' && sectionId === Number(currentUser.sectionId))
-      if (!canView) {
+      const section = sectionRes.rows[0] as SectionRow
+
+      if (!this.canViewSection(auth.getUserOrFail(), section)) {
         return response.forbidden({
           success: false,
           message: 'You cannot view progress for this section.',
         })
       }
 
-      const usersRes = await db.rawQuery(
-        `SELECT suid, name, avatar FROM users WHERE section_id = ? AND role_code = 'STUDENT' ORDER BY name ASC`,
-        [sectionId]
-      )
-
-      const users: UserProgressData[] = []
-      let sectionTotal = 0
-      let sectionCompleted = 0
-
-      for (const u of usersRes.rows as any[]) {
-        const taskRes = await db.rawQuery(
-          `SELECT 
-              COUNT(*) AS total,
-              COUNT(*) FILTER (WHERE status = 'COMPLETED') AS completed
-           FROM tasks WHERE assigned_to = ?`,
-          [u.suid]
-        )
-        const total = Number(taskRes.rows[0].total)
-        const completed = Number(taskRes.rows[0].completed)
-
-        sectionTotal += total
-        sectionCompleted += completed
-
-        users.push({
-          suid: u.suid,
-          name: u.name,
-          avatar: u.avatar,
-          totalTasks: total,
-          completedTasks: completed,
-          percentage: calcPercentage(completed, total),
-        })
-      }
-
-      const studentCountRes = await db.rawQuery(
-        `SELECT COUNT(*) AS student_count FROM users WHERE section_id = ? AND role_code = 'STUDENT'`,
-        [sectionId]
-      )
-      const studentCount = Number(studentCountRes.rows[0]?.student_count || 0)
-
-      const growthTrend = await this.getGrowthTrend(undefined, sectionId)
-
-      const data = {
-        section_id: section.section_id,
-        name: section.name,
-        department_id: section.department_id,
-        totalTasks: sectionTotal,
-        completedTasks: sectionCompleted,
-        percentage: calcPercentage(sectionCompleted, sectionTotal),
-        users,
-        studentCount,
-        growthTrend,
-      }
+      const students = await this.fetchSectionStudents(sectionId)
+      const lessonStats = await this.lessons.forStudents(students.map((s) => Number(s.suid)))
+      const data = await this.buildSection(section, students, lessonStats)
 
       return response.ok({ success: true, data })
     } catch (error: any) {
@@ -238,11 +300,8 @@ export default class ProgressController {
         throw new Error('Department મળ્યો નથી.')
       }
       const dept = deptRes.rows[0]
-      const currentUser = auth.getUserOrFail()
-      if (
-        currentUser.roleCode !== 'SUPER_ADMIN' &&
-        !(currentUser.roleCode === 'HEAD100' && departmentId === Number(currentUser.departmentId))
-      ) {
+
+      if (!this.canViewDepartment(auth.getUserOrFail(), departmentId)) {
         return response.forbidden({
           success: false,
           message: 'You cannot view progress for this department.',
@@ -250,78 +309,26 @@ export default class ProgressController {
       }
 
       const sectionsRes = await db.rawQuery(
-        `SELECT section_id FROM sections WHERE department_id = ? ORDER BY section_id ASC`,
+        `SELECT section_id, name, department_id FROM sections WHERE department_id = ? ORDER BY section_id ASC`,
         [departmentId]
       )
+      const sectionRows = sectionsRes.rows as SectionRow[]
 
-      const sections = []
-      let deptTotal = 0
-      let deptCompleted = 0
+      const studentsBySection = await Promise.all(
+        sectionRows.map((s) => this.fetchSectionStudents(s.section_id))
+      )
+      const lessonStats = await this.lessons.forStudents(
+        studentsBySection.flat().map((s) => Number(s.suid))
+      )
 
-      for (const s of sectionsRes.rows as any[]) {
-        const sectionRes = await db.rawQuery(
-          `SELECT section_id, name, department_id FROM sections WHERE section_id = ?`,
-          [s.section_id]
-        )
-        const section = sectionRes.rows[0]
-
-        const usersRes = await db.rawQuery(
-          `SELECT suid, name, avatar FROM users WHERE section_id = ? AND role_code = 'STUDENT' ORDER BY name ASC`,
-          [s.section_id]
-        )
-
-        const users: UserProgressData[] = []
-        let sectionTotal = 0
-        let sectionCompleted = 0
-
-        for (const u of usersRes.rows as any[]) {
-          const taskRes = await db.rawQuery(
-            `SELECT 
-                COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE status = 'COMPLETED') AS completed
-             FROM tasks WHERE assigned_to = ?`,
-            [u.suid]
-          )
-          const total = Number(taskRes.rows[0].total)
-          const completed = Number(taskRes.rows[0].completed)
-
-          sectionTotal += total
-          sectionCompleted += completed
-
-          users.push({
-            suid: u.suid,
-            name: u.name,
-            avatar: u.avatar,
-            totalTasks: total,
-            completedTasks: completed,
-            percentage: calcPercentage(completed, total),
-          })
-        }
-
-        const studentCountRes = await db.rawQuery(
-          `SELECT COUNT(*) AS student_count FROM users WHERE section_id = ? AND role_code = 'STUDENT'`,
-          [s.section_id]
-        )
-        const studentCount = Number(studentCountRes.rows[0]?.student_count || 0)
-
-        const sectionGrowthTrend = await this.getGrowthTrend(undefined, s.section_id)
-
-        deptTotal += sectionTotal
-        deptCompleted += sectionCompleted
-
-        sections.push({
-          section_id: section.section_id,
-          name: section.name,
-          department_id: section.department_id,
-          totalTasks: sectionTotal,
-          completedTasks: sectionCompleted,
-          percentage: calcPercentage(sectionCompleted, sectionTotal),
-          users,
-          studentCount,
-          growthTrend: sectionGrowthTrend,
-        })
+      const sections: SectionProgressData[] = []
+      for (let i = 0; i < sectionRows.length; i++) {
+        sections.push(await this.buildSection(sectionRows[i], studentsBySection[i], lessonStats))
       }
 
+      const deptTotal = sections.reduce((sum, s) => sum + s.totalTasks, 0)
+      const deptCompleted = sections.reduce((sum, s) => sum + s.completedTasks, 0)
+      const lessonTotals = mergeLessonStats(sections)
       const growthTrend = await this.getGrowthTrend(departmentId)
 
       const data = {
@@ -330,6 +337,8 @@ export default class ProgressController {
         totalTasks: deptTotal,
         completedTasks: deptCompleted,
         percentage: calcPercentage(deptCompleted, deptTotal),
+        overallPercentage: overall(deptCompleted, deptTotal, lessonTotals),
+        ...lessonTotals,
         sections,
         growthTrend,
       }
@@ -364,17 +373,128 @@ export default class ProgressController {
          ORDER BY d.department_name ASC`
       )
 
-      const data = (result.rows as any[]).map((row) => ({
-        department_id: row.department_id,
-        department_name: row.department_name,
-        percentage: calcPercentage(Number(row.completed), Number(row.total)),
-      }))
+      const studentsRes = await db.rawQuery(
+        `SELECT u.suid, s.department_id
+         FROM users u
+         JOIN sections s ON s.section_id = u.section_id
+         WHERE u.role_code = 'STUDENT'`
+      )
+      const studentRows = studentsRes.rows as { suid: number | string; department_id: number }[]
+      const lessonStats = await this.lessons.forStudents(studentRows.map((r) => Number(r.suid)))
+
+      const lessonsByDepartment = new Map<number, LessonStats[]>()
+      for (const row of studentRows) {
+        const key = Number(row.department_id)
+        const list = lessonsByDepartment.get(key) ?? []
+        list.push(lessonStats.get(Number(row.suid)) ?? emptyLessonStats())
+        lessonsByDepartment.set(key, list)
+      }
+
+      const data = (result.rows as any[]).map((row) => {
+        const total = Number(row.total)
+        const completed = Number(row.completed)
+        const lesson = mergeLessonStats(lessonsByDepartment.get(Number(row.department_id)) ?? [])
+
+        return {
+          department_id: row.department_id,
+          department_name: row.department_name,
+          percentage: calcPercentage(completed, total),
+          overallPercentage: overall(completed, total, lesson),
+          ...lesson,
+        }
+      })
 
       return response.ok({ success: true, data })
     } catch (error: any) {
       return response.internalServerError({
         success: false,
         message: error.message || 'Departments progress fetch કરવામાં એરર આવી.',
+      })
+    }
+  }
+
+  async lessonGrowth({ request, response, auth }: HttpContext) {
+    try {
+      const { scope, id, period } = await lessonGrowthQueryValidator.validate(request.qs())
+      const currentUser = auth.getUserOrFail()
+      let suids: number[] = []
+
+      if (scope === 'all') {
+        if (currentUser.roleCode !== 'SUPER_ADMIN') {
+          return response.forbidden({
+            success: false,
+            message: 'Only SUPER_ADMIN can view overall lesson growth.',
+          })
+        }
+        const res = await db.rawQuery(`SELECT suid FROM users WHERE role_code = 'STUDENT'`)
+        suids = (res.rows as { suid: number | string }[]).map((r) => Number(r.suid))
+      } else {
+        if (!id) {
+          return response.badRequest({ success: false, message: 'id is required for this scope.' })
+        }
+
+        if (scope === 'user') {
+          const canView = await this.canViewStudent(
+            currentUser.roleCode,
+            Number(currentUser.suid),
+            currentUser.departmentId ?? null,
+            currentUser.sectionId ?? null,
+            id
+          )
+          if (!canView) {
+            return response.forbidden({
+              success: false,
+              message: 'You cannot view progress for this user.',
+            })
+          }
+          suids = [id]
+        } else if (scope === 'section') {
+          const sectionRes = await db.rawQuery(
+            `SELECT section_id, name, department_id FROM sections WHERE section_id = ?`,
+            [id]
+          )
+          if (sectionRes.rows.length === 0) {
+            return response.notFound({ success: false, message: 'Section મળ્યું નથી.' })
+          }
+          if (!this.canViewSection(currentUser, sectionRes.rows[0] as SectionRow)) {
+            return response.forbidden({
+              success: false,
+              message: 'You cannot view progress for this section.',
+            })
+          }
+          const students = await this.fetchSectionStudents(id)
+          suids = students.map((s) => Number(s.suid))
+        } else {
+          if (!this.canViewDepartment(currentUser, id)) {
+            return response.forbidden({
+              success: false,
+              message: 'You cannot view progress for this department.',
+            })
+          }
+          const res = await db.rawQuery(
+            `SELECT u.suid
+             FROM users u
+             JOIN sections s ON s.section_id = u.section_id
+             WHERE s.department_id = ? AND u.role_code = 'STUDENT'`,
+            [id]
+          )
+          suids = (res.rows as { suid: number | string }[]).map((r) => Number(r.suid))
+        }
+      }
+
+      const data = await this.lessons.growth(suids, period ?? 'week')
+      return response.ok({ success: true, data })
+    } catch (error: any) {
+      if (error.messages) {
+        return response.unprocessableEntity({
+          success: false,
+          message: 'Validation failed',
+          errors: error.messages,
+        })
+      }
+      return response.internalServerError({
+        success: false,
+        message: error.message || 'Lesson growth fetch કરવામાં એરર આવી.',
       })
     }
   }

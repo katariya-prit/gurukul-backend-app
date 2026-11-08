@@ -37,6 +37,7 @@ export type ScannedRoutes = {
     'sections.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.stats': { paramsTuple?: []; params?: {} }
     'progress.all_departments': { paramsTuple?: []; params?: {} }
+    'progress.lesson_growth': { paramsTuple?: []; params?: {} }
     'progress.department_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
@@ -89,6 +90,7 @@ export type ScannedRoutes = {
     'sections.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.stats': { paramsTuple?: []; params?: {} }
     'progress.all_departments': { paramsTuple?: []; params?: {} }
+    'progress.lesson_growth': { paramsTuple?: []; params?: {} }
     'progress.department_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
@@ -120,6 +122,7 @@ export type ScannedRoutes = {
     'sections.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.stats': { paramsTuple?: []; params?: {} }
     'progress.all_departments': { paramsTuple?: []; params?: {} }
+    'progress.lesson_growth': { paramsTuple?: []; params?: {} }
     'progress.department_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.section_progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'progress.user_progress': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }

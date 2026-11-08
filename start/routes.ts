@@ -132,6 +132,9 @@ router
       .get('/departments', [ProgressController, 'allDepartments'])
       .use(permission({ module: 'Progress', action: 'view' }))
     router
+      .get('/lessons/growth', [ProgressController, 'lessonGrowth'])
+      .use(permission({ module: 'Progress', action: 'view' }))
+    router
       .get('/department/:id', [ProgressController, 'departmentProgress'])
       .use(permission({ module: 'Progress', action: 'view' }))
     router

@@ -7,6 +7,38 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AssistantMessageSchema extends BaseModel {
+  static $columns = ['content', 'createdAt', 'id', 'role', 'status', 'threadId'] as const
+  $columns = AssistantMessageSchema.$columns
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare role: string
+  @column()
+  declare status: string
+  @column()
+  declare threadId: string
+}
+
+export class AssistantThreadSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'title', 'updatedAt', 'userId'] as const
+  $columns = AssistantThreadSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: bigint | number
+}
+
 export class AuthAccessTokenSchema extends BaseModel {
   static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
@@ -30,6 +62,57 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class ChatConversationSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'lastMessageAt', 'lastMessageId', 'lastMessagePreview', 'userHighId', 'userLowId'] as const
+  $columns = ChatConversationSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: bigint | number
+  @column.dateTime()
+  declare lastMessageAt: DateTime | null
+  @column()
+  declare lastMessageId: bigint | number | null
+  @column()
+  declare lastMessagePreview: string | null
+  @column()
+  declare userHighId: bigint | number
+  @column()
+  declare userLowId: bigint | number
+}
+
+export class ChatMessageSchema extends BaseModel {
+  static $columns = ['body', 'clientId', 'conversationId', 'createdAt', 'deletedAt', 'id', 'senderId'] as const
+  $columns = ChatMessageSchema.$columns
+  @column()
+  declare body: string
+  @column()
+  declare clientId: string
+  @column()
+  declare conversationId: bigint | number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: bigint | number
+  @column()
+  declare senderId: bigint | number
+}
+
+export class ChatReadSchema extends BaseModel {
+  static $columns = ['conversationId', 'lastReadMessageId', 'updatedAt', 'userId'] as const
+  $columns = ChatReadSchema.$columns
+  @column({ isPrimary: true })
+  declare conversationId: bigint | number
+  @column()
+  declare lastReadMessageId: bigint | number | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: bigint | number
 }
 
 export class DailyDarshanSchema extends BaseModel {
@@ -348,6 +431,21 @@ export class TaskSchema extends BaseModel {
   declare taskId: number
   @column()
   declare title: string
+}
+
+export class UserContactSchema extends BaseModel {
+  static $columns = ['contactId', 'createdAt', 'id', 'nickname', 'ownerId'] as const
+  $columns = UserContactSchema.$columns
+  @column()
+  declare contactId: bigint | number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: bigint | number
+  @column()
+  declare nickname: string | null
+  @column()
+  declare ownerId: bigint | number
 }
 
 export class UserSchema extends BaseModel {
