@@ -82,6 +82,8 @@ export type ScannedRoutes = {
     'chat_messages.conversations': { paramsTuple?: []; params?: {} }
     'chat_messages.messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'chat_messages.peer_messages': { paramsTuple: [ParamValue]; params: {'peerId': ParamValue} }
+    'chat_messages.conv_messages': { paramsTuple: [ParamValue]; params: {'convKey': ParamValue} }
+    'chat_messages.conv_post_message': { paramsTuple: [ParamValue]; params: {'convKey': ParamValue} }
     'chat_messages.store': { paramsTuple?: []; params?: {} }
     'chat_messages.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'chat_messages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -124,6 +126,7 @@ export type ScannedRoutes = {
     'chat_messages.conversations': { paramsTuple?: []; params?: {} }
     'chat_messages.messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'chat_messages.peer_messages': { paramsTuple: [ParamValue]; params: {'peerId': ParamValue} }
+    'chat_messages.conv_messages': { paramsTuple: [ParamValue]; params: {'convKey': ParamValue} }
   }
   HEAD: {
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -162,6 +165,7 @@ export type ScannedRoutes = {
     'chat_messages.conversations': { paramsTuple?: []; params?: {} }
     'chat_messages.messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'chat_messages.peer_messages': { paramsTuple: [ParamValue]; params: {'peerId': ParamValue} }
+    'chat_messages.conv_messages': { paramsTuple: [ParamValue]; params: {'convKey': ParamValue} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -183,6 +187,7 @@ export type ScannedRoutes = {
     'lesson_submissions.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'chat_contacts.store': { paramsTuple?: []; params?: {} }
     'chat_contacts.block': { paramsTuple?: []; params?: {} }
+    'chat_messages.conv_post_message': { paramsTuple: [ParamValue]; params: {'convKey': ParamValue} }
     'chat_messages.store': { paramsTuple?: []; params?: {} }
     'chat_messages.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'chat_messages.typing': { paramsTuple?: []; params?: {} }

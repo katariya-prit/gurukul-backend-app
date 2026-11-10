@@ -267,6 +267,8 @@ router
     router.get('/conversations', [ChatMessagesController, 'conversations'])
     router.get('/conversations/:id/messages', [ChatMessagesController, 'messages'])
     router.get('/peer/:peerId/messages', [ChatMessagesController, 'peerMessages'])
+    router.get('/:convKey/messages', [ChatMessagesController, 'convMessages'])
+    router.post('/:convKey/messages', [ChatMessagesController, 'convPostMessage'])
     router.post('/messages', [ChatMessagesController, 'store'])
     router.post('/conversations/:id/read', [ChatMessagesController, 'read'])
     router.delete('/messages/:id', [ChatMessagesController, 'destroy'])

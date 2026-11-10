@@ -474,6 +474,18 @@ const routes = {
     tokens: [{"old":"/chat/peer/:peerId/messages","type":0,"val":"chat","end":""},{"old":"/chat/peer/:peerId/messages","type":0,"val":"peer","end":""},{"old":"/chat/peer/:peerId/messages","type":1,"val":"peerId","end":""},{"old":"/chat/peer/:peerId/messages","type":0,"val":"messages","end":""}],
     types: placeholder as Registry['chat_messages.peer_messages']['types'],
   },
+  'chat_messages.conv_messages': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/:convKey/messages',
+    tokens: [{"old":"/chat/:convKey/messages","type":0,"val":"chat","end":""},{"old":"/chat/:convKey/messages","type":1,"val":"convKey","end":""},{"old":"/chat/:convKey/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['chat_messages.conv_messages']['types'],
+  },
+  'chat_messages.conv_post_message': {
+    methods: ["POST"],
+    pattern: '/chat/:convKey/messages',
+    tokens: [{"old":"/chat/:convKey/messages","type":0,"val":"chat","end":""},{"old":"/chat/:convKey/messages","type":1,"val":"convKey","end":""},{"old":"/chat/:convKey/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['chat_messages.conv_post_message']['types'],
+  },
   'chat_messages.store': {
     methods: ["POST"],
     pattern: '/chat/messages',

@@ -117,6 +117,8 @@ export interface ApiDefinition {
     conversations: typeof routes['chat_messages.conversations']
     messages: typeof routes['chat_messages.messages']
     peerMessages: typeof routes['chat_messages.peer_messages']
+    convMessages: typeof routes['chat_messages.conv_messages']
+    convPostMessage: typeof routes['chat_messages.conv_post_message']
     store: typeof routes['chat_messages.store']
     read: typeof routes['chat_messages.read']
     destroy: typeof routes['chat_messages.destroy']

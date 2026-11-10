@@ -943,6 +943,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['peerMessages']>>>
     }
   }
+  'chat_messages.conv_messages': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/:convKey/messages'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { convKey: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['convMessages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['convMessages']>>>
+    }
+  }
+  'chat_messages.conv_post_message': {
+    methods: ["POST"]
+    pattern: '/chat/:convKey/messages'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { convKey: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['convPostMessage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['convPostMessage']>>>
+    }
+  }
   'chat_messages.store': {
     methods: ["POST"]
     pattern: '/chat/messages'
