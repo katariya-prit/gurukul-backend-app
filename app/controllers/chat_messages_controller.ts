@@ -45,6 +45,29 @@ function serializeMsg(m: any) {
   }
 }
 
+let groupMessagesTableReady = false
+async function ensureGroupMessagesTable() {
+  if (groupMessagesTableReady) return
+  try {
+    await db.rawQuery(`
+      CREATE TABLE IF NOT EXISTS group_messages (
+        id BIGSERIAL PRIMARY KEY,
+        group_id INTEGER NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
+        sender_id BIGINT NOT NULL REFERENCES users(suid) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        client_id VARCHAR(120),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS group_messages_group_id_id_idx ON group_messages (group_id, id);
+      CREATE INDEX IF NOT EXISTS group_messages_sender_id_idx ON group_messages (sender_id);
+    `)
+    groupMessagesTableReady = true
+  } catch (err) {
+    console.warn('[CHAT] ensureGroupMessagesTable notice:', err)
+  }
+}
+
 export default class ChatMessagesController {
   /**
    * GET /chat/conversations
@@ -67,7 +90,7 @@ export default class ChatMessagesController {
               c.last_message_preview,
               c.created_at,
               CASE 
-                WHEN c.user_low_id = :mySuid THEN c.user_high_id 
+                WHEN c.user_low_id = :mySuid::bigint THEN c.user_high_id 
                 ELSE c.user_low_id 
               END AS other_user_id,
               u.name AS other_user_name,
@@ -77,15 +100,15 @@ export default class ChatMessagesController {
                 (SELECT COUNT(*) 
                  FROM chat_messages cm 
                  WHERE cm.conversation_id = c.id 
-                   AND cm.sender_id != :mySuid 
+                   AND cm.sender_id != :mySuid::bigint 
                    AND cm.deleted_at IS NULL
                 ), 0
               )::int AS unread_count
            FROM chat_conversations c
            JOIN users u ON u.suid = (
-             CASE WHEN c.user_low_id = :mySuid THEN c.user_high_id ELSE c.user_low_id END
+             CASE WHEN c.user_low_id = :mySuid::bigint THEN c.user_high_id ELSE c.user_low_id END
            )
-           WHERE (c.user_low_id = :mySuid OR c.user_high_id = :mySuid)
+           WHERE (c.user_low_id = :mySuid::bigint OR c.user_high_id = :mySuid::bigint)
              AND c.last_message_id IS NOT NULL
            ORDER BY c.last_message_at DESC NULLS LAST`,
           { mySuid: mySuidNum }
@@ -440,6 +463,44 @@ export default class ChatMessagesController {
         }
       }
 
+      if (convKey.startsWith('group_')) {
+        await ensureGroupMessagesTable()
+        const groupId = Number(convKey.replace(/^group_/, ''))
+        if (!groupId || isNaN(groupId)) {
+          return response.ok({ success: true, data: [] })
+        }
+
+        const rows = await db.rawQuery(
+          `SELECT gm.id, gm.group_id, gm.sender_id, gm.body, gm.client_id, gm.created_at,
+                  u.name AS sender_name, u.avatar AS sender_avatar
+           FROM group_messages gm
+           JOIN users u ON u.suid = gm.sender_id
+           WHERE gm.group_id = :groupId
+             AND gm.deleted_at IS NULL
+           ORDER BY gm.id ASC`,
+          { groupId }
+        )
+
+        return response.ok({
+          success: true,
+          data: (rows.rows || []).map((row: any) => ({
+            id: String(row.id),
+            group_id: row.group_id,
+            conversation_id: convKey,
+            sender_id: String(row.sender_id),
+            sender_suid: String(row.sender_id),
+            sender_name: row.sender_name || `User #${row.sender_id}`,
+            sender_avatar: row.sender_avatar || null,
+            body: row.body,
+            text: row.body,
+            client_id: row.client_id || '',
+            created_at: new Date(row.created_at).toISOString(),
+            time: new Date(row.created_at).toISOString(),
+            deleted: false,
+          })),
+        })
+      }
+
       return response.ok({ success: true, data: [] })
     } catch (err) {
       console.warn('[CHAT] convMessages error:', err)
@@ -467,10 +528,114 @@ export default class ChatMessagesController {
         }
       }
 
+      if (convKey.startsWith('group_')) {
+        await ensureGroupMessagesTable()
+        const groupId = Number(convKey.replace(/^group_/, ''))
+        if (!groupId || isNaN(groupId)) {
+          return response.badRequest({ success: false, message: 'Invalid group ID.' })
+        }
+
+        const groupRes = await db.rawQuery(
+          `SELECT group_id, group_name, member_ids, created_by FROM groups WHERE group_id = :groupId LIMIT 1`,
+          { groupId }
+        )
+        const group = groupRes.rows[0]
+        if (!group) {
+          return response.notFound({ success: false, message: 'Group not found.' })
+        }
+
+        const memberIds: number[] = Array.isArray(group.member_ids) ? group.member_ids.map(Number) : []
+        const isMember = memberIds.includes(Number(mySuid)) || me.roleCode === 'SUPER_ADMIN'
+        if (!isMember) {
+          return response.forbidden({ success: false, message: 'You are not a member of this group.' })
+        }
+
+        const body = String(request.input('text') || request.input('body') || '').trim()
+        if (!body) {
+          return response.badRequest({ success: false, message: 'Message body cannot be empty.' })
+        }
+        const clientId = String(request.input('client_id') || '').trim() || null
+
+        const insertRes = await db.rawQuery(
+          `INSERT INTO group_messages (group_id, sender_id, body, client_id, created_at)
+           VALUES (:groupId, :senderId, :body, :clientId, NOW())
+           RETURNING id, group_id, sender_id, body, client_iad, created_at`,
+          {
+            groupId,
+            senderId: mySuid,
+            body,
+            clientId,
+          }
+        )
+        const row = insertRes.rows[0]
+        const serializedGroupMsg = {
+          id: String(row.id),
+          group_id: groupId,
+          conversation_id: convKey,
+          sender_id: String(row.sender_id),
+          sender_suid: String(row.sender_id),
+          sender_name: me.name,
+          sender_avatar: me.avatar || null,
+          body: row.body,
+          text: row.body,
+          client_id: row.client_id || clientId || '',
+          created_at: new Date(row.created_at).toISOString(),
+          time: new Date(row.created_at).toISOString(),
+          deleted: false,
+        }
+
+        const preview = body.length > 120 ? body.slice(0, 117) + '...' : body
+        const broadcastTargets = Array.from(new Set([...memberIds, Number(mySuid)]))
+
+        for (const targetId of broadcastTargets) {
+          const targetSuid = String(targetId)
+          try {
+            await transmit.broadcast(`chat/${targetSuid}`, {
+              event: 'group.message.created',
+              group_id: groupId,
+              group_name: group.group_name,
+              message: serializedGroupMsg,
+              from_user: {
+                suid: mySuid,
+                name: me.name,
+                avatar: me.avatar,
+              },
+            })
+            if (targetSuid !== mySuid) {
+              await transmit.broadcast(`notifications/${targetSuid}`, {
+                type: 'group_chat',
+                title: `${group.group_name}: ${me.name}`,
+                message: preview,
+                link: `/dashboard/community?groupId=${groupId}`,
+                is_read: false,
+                created_at: serializedGroupMsg.created_at,
+                data: {
+                  group_id: groupId,
+                },
+              })
+              await db.table('notifications').insert({
+                user_id: targetSuid,
+                actor_id: mySuid,
+                type: 'group_chat',
+                title: `${group.group_name}: ${me.name}`,
+                message: preview,
+                link: `/dashboard/community?groupId=${groupId}`,
+                is_read: false,
+                created_at: serializedGroupMsg.created_at,
+              })
+            }
+          } catch (bErr) {
+            console.warn(`[CHAT] Broadcast to group member ${targetSuid} failed:`, bErr)
+          }
+        }
+
+        return response.ok({ success: true, data: serializedGroupMsg })
+      }
+
       return response.ok({ success: true })
     } catch (err) {
       console.warn('[CHAT] convPostMessage error:', err)
-      return response.ok({ success: true })
+      return response.badRequest({ success: false, message: 'Failed to send message.' })
     }
   }
 
