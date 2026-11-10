@@ -120,6 +120,7 @@ export default class RouteNotificationsMiddleware {
     if (
       routePattern.startsWith('/notifications') ||
       routePattern.startsWith('/__transmit') ||
+      routePattern.startsWith('/chat') ||
       routePattern === '/users/login' ||
       routePattern === '/users/logout'
     ) {

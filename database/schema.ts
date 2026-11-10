@@ -433,6 +433,19 @@ export class TaskSchema extends BaseModel {
   declare title: string
 }
 
+export class UserBlockSchema extends BaseModel {
+  static $columns = ['blockedId', 'blockerId', 'createdAt', 'id'] as const
+  $columns = UserBlockSchema.$columns
+  @column()
+  declare blockedId: bigint | number
+  @column()
+  declare blockerId: bigint | number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: bigint | number
+}
+
 export class UserContactSchema extends BaseModel {
   static $columns = ['contactId', 'createdAt', 'id', 'nickname', 'ownerId'] as const
   $columns = UserContactSchema.$columns

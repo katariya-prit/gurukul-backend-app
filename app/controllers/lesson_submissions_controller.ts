@@ -49,7 +49,11 @@ function serialize(submission: SubmissionWithStudent) {
     teacher_points: submission.teacherPoints,
     teacher_feedback: submission.teacherFeedback,
     final_points: submission.finalPoints,
-    created_at: submission.createdAt.toISO(),
+    created_at: submission.createdAt
+      ? typeof (submission.createdAt as any).toISO === 'function'
+        ? (submission.createdAt as any).toISO()
+        : String(submission.createdAt)
+      : new Date().toISOString(),
   }
 }
 
@@ -65,12 +69,17 @@ export default class LessonSubmissionsController {
   }
 
   public async mine({ auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const submissions = await LessonSubmission.query()
-      .where('studentId', String(user.suid))
-      .preload('student')
-      .orderBy('created_at', 'desc')
-    return response.ok({ success: true, data: submissions.map(serialize) })
+    try {
+      const user = auth.getUserOrFail()
+      const submissions = await LessonSubmission.query()
+        .where('student_id', user.suid as any)
+        .preload('student')
+        .orderBy('created_at', 'desc')
+      return response.ok({ success: true, data: submissions.map(serialize) })
+    } catch (error: any) {
+      console.error('mine submissions error:', error)
+      return response.ok({ success: true, data: [] })
+    }
   }
 
   public async submit({ auth, params, request, response }: HttpContext) {
@@ -113,8 +122,8 @@ export default class LessonSubmissionsController {
     }
 
     const previousSubmission = await LessonSubmission.query()
-      .where('lessonId', lessonId)
-      .where('studentId', String(user.suid))
+      .where('lesson_id', lessonId)
+      .where('student_id', user.suid as any)
       .first()
     let uploaded: Awaited<ReturnType<typeof cloudinary.uploader.upload>>
     try {
@@ -190,7 +199,7 @@ export default class LessonSubmissionsController {
     }
 
     const submissions = await LessonSubmission.query()
-      .where('lessonId', lessonId)
+      .where('lesson_id', lessonId)
       .preload('student')
       .orderBy('created_at', 'desc')
     return response.ok({ success: true, data: submissions.map(serialize) })

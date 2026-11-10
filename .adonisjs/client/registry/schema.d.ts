@@ -811,4 +811,184 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/lesson_submissions_controller').default['forLesson']>>>
     }
   }
+  'chat_contacts.lookup': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/users/lookup/:suid'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { suid: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['lookup']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['lookup']>>>
+    }
+  }
+  'chat_contacts.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/contacts'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['index']>>>
+    }
+  }
+  'chat_contacts.store': {
+    methods: ["POST"]
+    pattern: '/chat/contacts'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').createContactValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').createContactValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'chat_contacts.update': {
+    methods: ["PUT"]
+    pattern: '/chat/contacts/:contactId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').updateContactValidator)>>
+      paramsTuple: [ParamValue]
+      params: { contactId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').updateContactValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'chat_contacts.destroy': {
+    methods: ["DELETE"]
+    pattern: '/chat/contacts/:contactId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { contactId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['destroy']>>>
+    }
+  }
+  'chat_contacts.blocks': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/blocks'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['blocks']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['blocks']>>>
+    }
+  }
+  'chat_contacts.block': {
+    methods: ["POST"]
+    pattern: '/chat/blocks'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').blockUserValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').blockUserValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['block']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['block']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'chat_contacts.unblock': {
+    methods: ["DELETE"]
+    pattern: '/chat/blocks/:userId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { userId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['unblock']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_contacts_controller').default['unblock']>>>
+    }
+  }
+  'chat_messages.conversations': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/conversations'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['conversations']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['conversations']>>>
+    }
+  }
+  'chat_messages.messages': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/conversations/:id/messages'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['messages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['messages']>>>
+    }
+  }
+  'chat_messages.peer_messages': {
+    methods: ["GET","HEAD"]
+    pattern: '/chat/peer/:peerId/messages'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { peerId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['peerMessages']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['peerMessages']>>>
+    }
+  }
+  'chat_messages.store': {
+    methods: ["POST"]
+    pattern: '/chat/messages'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').sendMessageValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').sendMessageValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'chat_messages.read': {
+    methods: ["POST"]
+    pattern: '/chat/conversations/:id/read'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').markReadValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').markReadValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['read']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['read']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'chat_messages.destroy': {
+    methods: ["DELETE"]
+    pattern: '/chat/messages/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['destroy']>>>
+    }
+  }
+  'chat_messages.typing': {
+    methods: ["POST"]
+    pattern: '/chat/typing'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').typingValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').typingValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['typing']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['typing']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
 }

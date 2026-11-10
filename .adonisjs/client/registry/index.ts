@@ -408,6 +408,96 @@ const routes = {
     tokens: [{"old":"/lessons/:id/submissions","type":0,"val":"lessons","end":""},{"old":"/lessons/:id/submissions","type":1,"val":"id","end":""},{"old":"/lessons/:id/submissions","type":0,"val":"submissions","end":""}],
     types: placeholder as Registry['lesson_submissions.for_lesson']['types'],
   },
+  'chat_contacts.lookup': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/users/lookup/:suid',
+    tokens: [{"old":"/chat/users/lookup/:suid","type":0,"val":"chat","end":""},{"old":"/chat/users/lookup/:suid","type":0,"val":"users","end":""},{"old":"/chat/users/lookup/:suid","type":0,"val":"lookup","end":""},{"old":"/chat/users/lookup/:suid","type":1,"val":"suid","end":""}],
+    types: placeholder as Registry['chat_contacts.lookup']['types'],
+  },
+  'chat_contacts.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/contacts',
+    tokens: [{"old":"/chat/contacts","type":0,"val":"chat","end":""},{"old":"/chat/contacts","type":0,"val":"contacts","end":""}],
+    types: placeholder as Registry['chat_contacts.index']['types'],
+  },
+  'chat_contacts.store': {
+    methods: ["POST"],
+    pattern: '/chat/contacts',
+    tokens: [{"old":"/chat/contacts","type":0,"val":"chat","end":""},{"old":"/chat/contacts","type":0,"val":"contacts","end":""}],
+    types: placeholder as Registry['chat_contacts.store']['types'],
+  },
+  'chat_contacts.update': {
+    methods: ["PUT"],
+    pattern: '/chat/contacts/:contactId',
+    tokens: [{"old":"/chat/contacts/:contactId","type":0,"val":"chat","end":""},{"old":"/chat/contacts/:contactId","type":0,"val":"contacts","end":""},{"old":"/chat/contacts/:contactId","type":1,"val":"contactId","end":""}],
+    types: placeholder as Registry['chat_contacts.update']['types'],
+  },
+  'chat_contacts.destroy': {
+    methods: ["DELETE"],
+    pattern: '/chat/contacts/:contactId',
+    tokens: [{"old":"/chat/contacts/:contactId","type":0,"val":"chat","end":""},{"old":"/chat/contacts/:contactId","type":0,"val":"contacts","end":""},{"old":"/chat/contacts/:contactId","type":1,"val":"contactId","end":""}],
+    types: placeholder as Registry['chat_contacts.destroy']['types'],
+  },
+  'chat_contacts.blocks': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/blocks',
+    tokens: [{"old":"/chat/blocks","type":0,"val":"chat","end":""},{"old":"/chat/blocks","type":0,"val":"blocks","end":""}],
+    types: placeholder as Registry['chat_contacts.blocks']['types'],
+  },
+  'chat_contacts.block': {
+    methods: ["POST"],
+    pattern: '/chat/blocks',
+    tokens: [{"old":"/chat/blocks","type":0,"val":"chat","end":""},{"old":"/chat/blocks","type":0,"val":"blocks","end":""}],
+    types: placeholder as Registry['chat_contacts.block']['types'],
+  },
+  'chat_contacts.unblock': {
+    methods: ["DELETE"],
+    pattern: '/chat/blocks/:userId',
+    tokens: [{"old":"/chat/blocks/:userId","type":0,"val":"chat","end":""},{"old":"/chat/blocks/:userId","type":0,"val":"blocks","end":""},{"old":"/chat/blocks/:userId","type":1,"val":"userId","end":""}],
+    types: placeholder as Registry['chat_contacts.unblock']['types'],
+  },
+  'chat_messages.conversations': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/conversations',
+    tokens: [{"old":"/chat/conversations","type":0,"val":"chat","end":""},{"old":"/chat/conversations","type":0,"val":"conversations","end":""}],
+    types: placeholder as Registry['chat_messages.conversations']['types'],
+  },
+  'chat_messages.messages': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/conversations/:id/messages',
+    tokens: [{"old":"/chat/conversations/:id/messages","type":0,"val":"chat","end":""},{"old":"/chat/conversations/:id/messages","type":0,"val":"conversations","end":""},{"old":"/chat/conversations/:id/messages","type":1,"val":"id","end":""},{"old":"/chat/conversations/:id/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['chat_messages.messages']['types'],
+  },
+  'chat_messages.peer_messages': {
+    methods: ["GET","HEAD"],
+    pattern: '/chat/peer/:peerId/messages',
+    tokens: [{"old":"/chat/peer/:peerId/messages","type":0,"val":"chat","end":""},{"old":"/chat/peer/:peerId/messages","type":0,"val":"peer","end":""},{"old":"/chat/peer/:peerId/messages","type":1,"val":"peerId","end":""},{"old":"/chat/peer/:peerId/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['chat_messages.peer_messages']['types'],
+  },
+  'chat_messages.store': {
+    methods: ["POST"],
+    pattern: '/chat/messages',
+    tokens: [{"old":"/chat/messages","type":0,"val":"chat","end":""},{"old":"/chat/messages","type":0,"val":"messages","end":""}],
+    types: placeholder as Registry['chat_messages.store']['types'],
+  },
+  'chat_messages.read': {
+    methods: ["POST"],
+    pattern: '/chat/conversations/:id/read',
+    tokens: [{"old":"/chat/conversations/:id/read","type":0,"val":"chat","end":""},{"old":"/chat/conversations/:id/read","type":0,"val":"conversations","end":""},{"old":"/chat/conversations/:id/read","type":1,"val":"id","end":""},{"old":"/chat/conversations/:id/read","type":0,"val":"read","end":""}],
+    types: placeholder as Registry['chat_messages.read']['types'],
+  },
+  'chat_messages.destroy': {
+    methods: ["DELETE"],
+    pattern: '/chat/messages/:id',
+    tokens: [{"old":"/chat/messages/:id","type":0,"val":"chat","end":""},{"old":"/chat/messages/:id","type":0,"val":"messages","end":""},{"old":"/chat/messages/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['chat_messages.destroy']['types'],
+  },
+  'chat_messages.typing': {
+    methods: ["POST"],
+    pattern: '/chat/typing',
+    tokens: [{"old":"/chat/typing","type":0,"val":"chat","end":""},{"old":"/chat/typing","type":0,"val":"typing","end":""}],
+    types: placeholder as Registry['chat_messages.typing']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

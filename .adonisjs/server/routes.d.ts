@@ -71,6 +71,21 @@ export type ScannedRoutes = {
     'lesson_submissions.re_evaluate': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
     'lesson_submissions.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lesson_submissions.for_lesson': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_contacts.lookup': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
+    'chat_contacts.index': { paramsTuple?: []; params?: {} }
+    'chat_contacts.store': { paramsTuple?: []; params?: {} }
+    'chat_contacts.update': { paramsTuple: [ParamValue]; params: {'contactId': ParamValue} }
+    'chat_contacts.destroy': { paramsTuple: [ParamValue]; params: {'contactId': ParamValue} }
+    'chat_contacts.blocks': { paramsTuple?: []; params?: {} }
+    'chat_contacts.block': { paramsTuple?: []; params?: {} }
+    'chat_contacts.unblock': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
+    'chat_messages.conversations': { paramsTuple?: []; params?: {} }
+    'chat_messages.messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_messages.peer_messages': { paramsTuple: [ParamValue]; params: {'peerId': ParamValue} }
+    'chat_messages.store': { paramsTuple?: []; params?: {} }
+    'chat_messages.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_messages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_messages.typing': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -103,6 +118,12 @@ export type ScannedRoutes = {
     'lesson.created': { paramsTuple?: []; params?: {} }
     'lesson_submissions.mine': { paramsTuple?: []; params?: {} }
     'lesson_submissions.for_lesson': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_contacts.lookup': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
+    'chat_contacts.index': { paramsTuple?: []; params?: {} }
+    'chat_contacts.blocks': { paramsTuple?: []; params?: {} }
+    'chat_messages.conversations': { paramsTuple?: []; params?: {} }
+    'chat_messages.messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_messages.peer_messages': { paramsTuple: [ParamValue]; params: {'peerId': ParamValue} }
   }
   HEAD: {
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -135,6 +156,12 @@ export type ScannedRoutes = {
     'lesson.created': { paramsTuple?: []; params?: {} }
     'lesson_submissions.mine': { paramsTuple?: []; params?: {} }
     'lesson_submissions.for_lesson': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_contacts.lookup': { paramsTuple: [ParamValue]; params: {'suid': ParamValue} }
+    'chat_contacts.index': { paramsTuple?: []; params?: {} }
+    'chat_contacts.blocks': { paramsTuple?: []; params?: {} }
+    'chat_messages.conversations': { paramsTuple?: []; params?: {} }
+    'chat_messages.messages': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_messages.peer_messages': { paramsTuple: [ParamValue]; params: {'peerId': ParamValue} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -154,6 +181,11 @@ export type ScannedRoutes = {
     'lesson.store': { paramsTuple?: []; params?: {} }
     'lesson_submissions.re_evaluate': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
     'lesson_submissions.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_contacts.store': { paramsTuple?: []; params?: {} }
+    'chat_contacts.block': { paramsTuple?: []; params?: {} }
+    'chat_messages.store': { paramsTuple?: []; params?: {} }
+    'chat_messages.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_messages.typing': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'users.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -167,6 +199,7 @@ export type ScannedRoutes = {
     'quotes.update_quote': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'daily_darshans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lesson_submissions.grade': { paramsTuple: [ParamValue]; params: {'submissionId': ParamValue} }
+    'chat_contacts.update': { paramsTuple: [ParamValue]; params: {'contactId': ParamValue} }
   }
   DELETE: {
     'users.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -177,6 +210,9 @@ export type ScannedRoutes = {
     'quotes.delete_quote': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'daily_darshans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'lesson.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'chat_contacts.destroy': { paramsTuple: [ParamValue]; params: {'contactId': ParamValue} }
+    'chat_contacts.unblock': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
+    'chat_messages.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PATCH: {
     'overviews.update_metadata': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

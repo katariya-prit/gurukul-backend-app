@@ -3,6 +3,8 @@ import { middleware } from '#start/kernel'
 import transmit from '@adonisjs/transmit/services/main'
 
 const AccessTokensController = () => import('#controllers/access_tokens_controller')
+const ChatContactsController = () => import('#controllers/chat_contacts_controller')
+const ChatMessagesController = () => import('#controllers/chat_messages_controller')
 const DailyDarshansController = () => import('#controllers/daily_darshans_controller')
 const DashboardController = () => import('#controllers/dashboard_controller')
 const DepartmentsController = () => import('#controllers/departments_controller')
@@ -22,7 +24,7 @@ const UsersController = () => import('#controllers/users_controller')
 
 transmit.registerRoutes()
 
-const apiAuth = middleware.auth({ guards: ['api'] })
+const apiAuth = middleware.auth({ guards: ['api', 'web'] })
 const permission = middleware.permission
 
 router.get('/', () => ({ success: true, message: 'Gurukul API is running' }))
@@ -105,7 +107,7 @@ router
     router.get('/', [SectionsController, 'index'])
     router
       .post('/create', [SectionsController, 'store'])
-      .use(permission({ module: 'Section', action: 'create' }))
+      .use(permission({ module: 'Section', action: 'create' })) 
     router.get('/:id', [SectionsController, 'show'])
     router
       .put('/:id', [SectionsController, 'update'])
@@ -150,7 +152,7 @@ router
 router
   .group(() => {
     router.get('/', [NotificationsController, 'index'])
-    router.put('/read-all', [NotificationsController, 'markAllRead'])
+    router.put('/read-all', [NotificationsController, 'markAllRead']) 
     router.put('/:id/read', [NotificationsController, 'markRead'])
   })
   .prefix('/notifications')
@@ -166,7 +168,6 @@ router
       .use(permission({ module: 'Group', action: 'view' }))
     router
       .get('/member/:suid', [GroupsController, 'byMember'])
-      .use(permission({ module: 'Group', action: 'view' }))
     router
       .post('/create', [GroupsController, 'store'])
       .use(permission({ module: 'Group', action: 'create' }))
@@ -247,3 +248,30 @@ router
   })
   .prefix('/lessons')
   .use(apiAuth)
+
+router
+  .group(() => {
+    // Dial and contacts
+    router.get('/users/lookup/:suid', [ChatContactsController, 'lookup'])
+    router.get('/contacts', [ChatContactsController, 'index'])
+    router.post('/contacts', [ChatContactsController, 'store'])
+    router.put('/contacts/:contactId', [ChatContactsController, 'update'])
+    router.delete('/contacts/:contactId', [ChatContactsController, 'destroy'])
+
+    // Blocks
+    router.get('/blocks', [ChatContactsController, 'blocks'])
+    router.post('/blocks', [ChatContactsController, 'block'])
+    router.delete('/blocks/:userId', [ChatContactsController, 'unblock'])
+
+    // Conversations and messages
+    router.get('/conversations', [ChatMessagesController, 'conversations'])
+    router.get('/conversations/:id/messages', [ChatMessagesController, 'messages'])
+    router.get('/peer/:peerId/messages', [ChatMessagesController, 'peerMessages'])
+    router.post('/messages', [ChatMessagesController, 'store'])
+    router.post('/conversations/:id/read', [ChatMessagesController, 'read'])
+    router.delete('/messages/:id', [ChatMessagesController, 'destroy'])
+    router.post('/typing', [ChatMessagesController, 'typing'])
+  })
+  .prefix('/chat')
+  .use(apiAuth)
+

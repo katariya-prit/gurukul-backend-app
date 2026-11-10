@@ -13,6 +13,10 @@ export default class PermissionMiddleware {
     const user = auth.getUserOrFail()
 
     if (user.roleCode !== 'SUPER_ADMIN') {
+      if (options.module === 'Dashboard' && options.action === 'view' && user.roleCode === 'STUDENT') {
+        return next()
+      }
+
       const role = await Role.find(user.roleCode)
       const permissions = role?.permissions as
         Record<string, Partial<Record<PermissionAction, boolean>>> | undefined

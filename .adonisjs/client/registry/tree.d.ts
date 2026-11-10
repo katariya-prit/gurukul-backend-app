@@ -103,4 +103,23 @@ export interface ApiDefinition {
     submit: typeof routes['lesson_submissions.submit']
     forLesson: typeof routes['lesson_submissions.for_lesson']
   }
+  chatContacts: {
+    lookup: typeof routes['chat_contacts.lookup']
+    index: typeof routes['chat_contacts.index']
+    store: typeof routes['chat_contacts.store']
+    update: typeof routes['chat_contacts.update']
+    destroy: typeof routes['chat_contacts.destroy']
+    blocks: typeof routes['chat_contacts.blocks']
+    block: typeof routes['chat_contacts.block']
+    unblock: typeof routes['chat_contacts.unblock']
+  }
+  chatMessages: {
+    conversations: typeof routes['chat_messages.conversations']
+    messages: typeof routes['chat_messages.messages']
+    peerMessages: typeof routes['chat_messages.peer_messages']
+    store: typeof routes['chat_messages.store']
+    read: typeof routes['chat_messages.read']
+    destroy: typeof routes['chat_messages.destroy']
+    typing: typeof routes['chat_messages.typing']
+  }
 }

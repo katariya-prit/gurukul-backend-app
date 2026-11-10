@@ -633,6 +633,42 @@ export const routeNotificationRules: Record<string, RouteNotificationRule> = {
     entityId: (data) => asId(data.snapshot?.lesson_id ?? data.params.id),
     snapshot: snapshotLesson,
   }),
+  'POST /lessons/:id/submit': makeRule({
+    title: 'Lesson submission received',
+    message: (data) => `${data.actor.name} submitted a response to a lesson.`,
+    type: 'info',
+    recipients: (data) => {
+      const lessonId = asId(data.params.id)
+      return [superAdmins(), ...(lessonId ? [{ kind: 'lessonCreator' as const, lessonId }] : [])]
+    },
+    link: (data) => `/dashboard/lessons/${data.params.id}/submissions`,
+    entityType: 'lesson_submission',
+    entityId: (data) => asId(resultValue(data, 'submission_id', 'submissionId')),
+  }),
+  'PUT /lessons/submissions/:submissionId/grade': makeRule({
+    title: 'Lesson submission graded',
+    message: () => `Your lesson submission has been graded.`,
+    type: 'success',
+    recipients: (data) => {
+      const studentId = asId(resultValue(data, 'student_id', 'studentId'))
+      return [superAdmins(), ...(studentId ? [userRecipient(studentId)] : [])]
+    },
+    link: '/dashboard/lessons/my-lessons',
+    entityType: 'lesson_submission',
+    entityId: (data) => asId(data.params.submissionId),
+  }),
+  'POST /lessons/submissions/:submissionId/re-evaluate': makeRule({
+    title: 'Lesson submission re-evaluated',
+    message: () => `Your lesson submission evaluation has been updated.`,
+    type: 'info',
+    recipients: (data) => {
+      const studentId = asId(resultValue(data, 'student_id', 'studentId'))
+      return [superAdmins(), ...(studentId ? [userRecipient(studentId)] : [])]
+    },
+    link: '/dashboard/lessons/my-lessons',
+    entityType: 'lesson_submission',
+    entityId: (data) => asId(data.params.submissionId),
+  }),
 }
 
 export function createDefaultRouteRule(routeKey: string): RouteNotificationRule {

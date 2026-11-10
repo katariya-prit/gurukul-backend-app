@@ -129,19 +129,31 @@ export default class GroupsController {
       const groupsRes = await db.rawQuery(
         `SELECT group_id, group_name, description, member_ids, created_by, created_at
          FROM groups
-         WHERE ? = ANY(member_ids)
+         WHERE ?::bigint = ANY(member_ids) OR created_by = ?::bigint
          ORDER BY created_at DESC`,
-        [suid]
+        [suid, suid]
       )
 
-      const data = (groupsRes.rows as any[]).map((g) => ({
-        group_id: g.group_id,
-        group_name: g.group_name,
-        description: g.description,
-        created_by: g.created_by,
-        created_at: g.created_at,
-        is_leader: Number(g.member_ids[0]) === suid,
-      }))
+      const data = await Promise.all(
+        (groupsRes.rows as any[]).map(async (g) => {
+          const [members, createdByName] = await Promise.all([
+            getMembersForGroup(g.member_ids),
+            getCreatedByName(g.created_by),
+          ])
+
+          return {
+            group_id: g.group_id,
+            group_name: g.group_name,
+            description: g.description,
+            created_by: g.created_by,
+            created_by_name: createdByName,
+            member_ids: g.member_ids,
+            members,
+            created_at: g.created_at,
+            is_leader: Array.isArray(g.member_ids) && Number(g.member_ids[0]) === suid,
+          }
+        })
+      )
 
       return response.ok({ success: true, data })
     } catch (error: any) {

@@ -4,61 +4,117 @@ import Notification from '#models/notification'
 function serializeNotification(notification: Notification) {
   return {
     id: notification.id,
-    title: notification.title,
-    message: notification.message,
-    type: notification.type,
-    link: notification.link,
-    is_read: notification.isRead,
-    created_at: notification.createdAt.toISO(),
-    entity_type: notification.entityType,
-    entity_id: notification.entityId,
-    route_key: notification.routeKey,
+    title: notification.title || '',
+    message: notification.message || '',
+    type: notification.type || 'info',
+    link: notification.link || null,
+    is_read: Boolean(notification.isRead),
+    created_at: notification.createdAt
+      ? typeof (notification.createdAt as any).toISO === 'function'
+        ? (notification.createdAt as any).toISO()
+        : String(notification.createdAt)
+      : new Date().toISOString(),
+    entity_type: notification.entityType || null,
+    entity_id: notification.entityId || null,
+    route_key: notification.routeKey || null,
   }
 }
 
 export default class NotificationsController {
   async index({ auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const userId = String(user.suid)
-    const [notifications, unreadResult] = await Promise.all([
-      Notification.query().where('user_id', userId).orderBy('created_at', 'desc').limit(100),
-      Notification.query()
-        .where('user_id', userId)
-        .where('is_read', false)
-        .count('* as total')
-        .first(),
-    ])
+    try {
+      const user = auth.getUserOrFail()
+      const userId = String(user.suid)
+      const roleCode = user.roleCode
 
-    return response.ok({
-      success: true,
-      data: notifications.map(serializeNotification),
-      unread_count: Number(unreadResult?.$extras.total ?? 0),
-    })
+      const [notifications, unreadResult] = await Promise.all([
+        Notification.query()
+          .where((q) => {
+            q.where('user_id', userId)
+            if (roleCode) {
+              q.orWhere((rq) => {
+                rq.whereNull('user_id').where('target_role', roleCode)
+              })
+            }
+          })
+          .orderBy('created_at', 'desc')
+          .limit(100),
+        Notification.query()
+          .where((q) => {
+            q.where('user_id', userId)
+            if (roleCode) {
+              q.orWhere((rq) => {
+                rq.whereNull('user_id').where('target_role', roleCode)
+              })
+            }
+          })
+          .where('is_read', false)
+          .count('* as total')
+          .first(),
+      ])
+
+      return response.ok({
+        success: true,
+        data: (notifications || []).map(serializeNotification),
+        unread_count: Number(unreadResult?.$extras.total ?? 0),
+      })
+    } catch (error: any) {
+      console.error('notifications index error:', error)
+      return response.ok({
+        success: true,
+        data: [],
+        unread_count: 0,
+      })
+    }
   }
 
   async markRead({ params, auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const notification = await Notification.query()
-      .where('id', params.id)
-      .where('user_id', String(user.suid))
-      .first()
+    try {
+      const user = auth.getUserOrFail()
+      const userId = String(user.suid)
+      const roleCode = user.roleCode
 
-    if (!notification) {
-      return response.notFound({ success: false, message: 'Notification not found' })
+      const notification = await Notification.query()
+        .where('id', params.id)
+        .where((q) => {
+          q.where('user_id', userId)
+          if (roleCode) {
+            q.orWhere('target_role', roleCode)
+          }
+        })
+        .first()
+
+      if (!notification) {
+        return response.notFound({ success: false, message: 'Notification not found' })
+      }
+
+      notification.isRead = true
+      await notification.save()
+      return response.ok({ success: true })
+    } catch (error: any) {
+      return response.badRequest({ success: false, message: error.message })
     }
-
-    notification.isRead = true
-    await notification.save()
-    return response.ok({ success: true })
   }
 
   async markAllRead({ auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
-    await Notification.query()
-      .where('user_id', String(user.suid))
-      .where('is_read', false)
-      .update({ isRead: true })
+    try {
+      const user = auth.getUserOrFail()
+      const userId = String(user.suid)
+      const roleCode = user.roleCode
 
-    return response.ok({ success: true })
+      await Notification.query()
+        .where((q) => {
+          q.where('user_id', userId)
+          if (roleCode) {
+            q.orWhere('target_role', roleCode)
+          }
+        })
+        .where('is_read', false)
+        .update({ is_read: true })
+
+      return response.ok({ success: true })
+    } catch (error: any) {
+      return response.badRequest({ success: false, message: error.message })
+    }
   }
 }

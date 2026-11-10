@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import ChatMessage from '#models/chat_message'
+import User from '#models/user'
 
 export default class ChatConversation extends BaseModel {
   static table = 'chat_conversations'
@@ -29,4 +30,10 @@ export default class ChatConversation extends BaseModel {
 
   @hasMany(() => ChatMessage, { foreignKey: 'conversationId' })
   declare messages: HasMany<typeof ChatMessage>
+
+  @belongsTo(() => User, { foreignKey: 'userLowId', localKey: 'suid' })
+  declare lowUser: BelongsTo<typeof User>
+
+  @belongsTo(() => User, { foreignKey: 'userHighId', localKey: 'suid' })
+  declare highUser: BelongsTo<typeof User>
 }
