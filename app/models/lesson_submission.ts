@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import FunctionalityItem from '#models/functionality_item'
 import Lesson from '#models/lesson'
 import User from '#models/user'
 
@@ -19,6 +20,17 @@ export interface AiResult {
   flags: string[]
 }
 
+export interface RubricSnapshot {
+  version: number
+  maxPoints: number
+  criteria: Array<{
+    key: string
+    label: string
+    weight: number
+    maxPoints: number
+  }>
+}
+
 export default class LessonSubmission extends BaseModel {
   static table = 'lesson_submissions'
 
@@ -30,6 +42,9 @@ export default class LessonSubmission extends BaseModel {
 
   @column({ columnName: 'student_id' })
   declare studentId: number | bigint
+
+  @column({ columnName: 'item_id' })
+  declare itemId: number | null
 
   @column({ columnName: 'media_url' })
   declare mediaUrl: string
@@ -51,6 +66,32 @@ export default class LessonSubmission extends BaseModel {
 
   @column({ columnName: 'ai_result' })
   declare aiResult: AiResult | null
+
+  @column({
+    columnName: 'rubric_snapshot',
+    prepare: (value: RubricSnapshot | null) => JSON.stringify(value ?? null),
+    consume: (value: unknown) => {
+      if (typeof value === 'string') {
+        return JSON.parse(value) as RubricSnapshot
+      }
+
+      return value as RubricSnapshot | null
+    },
+  })
+  declare rubricSnapshot: RubricSnapshot | null
+
+  @column({
+    columnName: 'criteria_scores',
+    prepare: (value: Record<string, number> | null) => JSON.stringify(value ?? {}),
+    consume: (value: unknown) => {
+      if (typeof value === 'string') {
+        return JSON.parse(value) as Record<string, number>
+      }
+
+      return (value ?? {}) as Record<string, number>
+    },
+  })
+  declare criteriaScores: Record<string, number> | null
 
   @column({ columnName: 'ai_error' })
   declare aiError: string | null
@@ -78,6 +119,9 @@ export default class LessonSubmission extends BaseModel {
 
   @belongsTo(() => Lesson, { foreignKey: 'lessonId' })
   declare lesson: BelongsTo<typeof Lesson>
+
+  @belongsTo(() => FunctionalityItem, { foreignKey: 'itemId' })
+  declare item: BelongsTo<typeof FunctionalityItem>
 
   @belongsTo(() => User, { foreignKey: 'studentId', localKey: 'suid' })
   declare student: BelongsTo<typeof User>

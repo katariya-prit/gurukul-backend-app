@@ -43,6 +43,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'health.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/health'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/health_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/health_controller').default['index']>>>
+    }
+  }
   'overviews.index': {
     methods: ["GET","HEAD"]
     pattern: '/overview'
@@ -271,6 +283,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/departments_controller').default['destroy']>>>
     }
   }
+  'department_functionalities.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/departments/:departmentId/functionalities'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { departmentId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/department_functionalities_controller').default['list']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/department_functionalities_controller').default['list']>>>
+    }
+  }
+  'department_functionalities.sync': {
+    methods: ["PUT"]
+    pattern: '/departments/:departmentId/functionalities'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/department_functionality').syncDepartmentFunctionalitiesValidator)>>
+      paramsTuple: [ParamValue]
+      params: { departmentId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/department_functionality').syncDepartmentFunctionalitiesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/department_functionalities_controller').default['sync']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/department_functionalities_controller').default['sync']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'roles.index': {
     methods: ["GET","HEAD"]
     pattern: '/roles'
@@ -377,6 +413,438 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/sections_controller').default['destroy']>>>
+    }
+  }
+  'functionalities.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/functionalities'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['index']>>>
+    }
+  }
+  'functionalities.store': {
+    methods: ["POST"]
+    pattern: '/functionalities'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').createFunctionalityValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').createFunctionalityValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionalities.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/functionalities/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['show']>>>
+    }
+  }
+  'functionalities.update': {
+    methods: ["PUT"]
+    pattern: '/functionalities/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').updateFunctionalityValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').updateFunctionalityValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionalities.set_active': {
+    methods: ["PATCH"]
+    pattern: '/functionalities/:id/active'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').activeToggleValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').activeToggleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['setActive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['setActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionalities.destroy': {
+    methods: ["DELETE"]
+    pattern: '/functionalities/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['destroy']>>>
+    }
+  }
+  'functionalities.departments': {
+    methods: ["GET","HEAD"]
+    pattern: '/functionalities/:id/departments'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['departments']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['departments']>>>
+    }
+  }
+  'functionalities.update_departments': {
+    methods: ["PUT"]
+    pattern: '/functionalities/:id/departments'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').bulkDepartmentAssignmentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').bulkDepartmentAssignmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['updateDepartments']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionalities_controller').default['updateDepartments']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionality_items.by_functionality': {
+    methods: ["GET","HEAD"]
+    pattern: '/functionalities/:id/items'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['byFunctionality']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['byFunctionality']>>>
+    }
+  }
+  'functionality_items.store': {
+    methods: ["POST"]
+    pattern: '/functionalities/:id/items'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').createItemValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').createItemValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionality_items.summaries': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/summaries'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['summaries']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['summaries']>>>
+    }
+  }
+  'functionality_items.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/items'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['index']>>>
+    }
+  }
+  'functionality_items.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['show']>>>
+    }
+  }
+  'functionality_items.update': {
+    methods: ["PUT"]
+    pattern: '/items/:itemId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').updateItemValidator)>>
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').updateItemValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionality_items.set_active': {
+    methods: ["PATCH"]
+    pattern: '/items/:itemId/active'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').activeToggleValidator)>>
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').activeToggleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['setActive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['setActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'functionality_items.destroy': {
+    methods: ["DELETE"]
+    pattern: '/items/:itemId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/functionality_items_controller').default['destroy']>>>
+    }
+  }
+  'item_rubrics.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/rubric'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_rubrics_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_rubrics_controller').default['show']>>>
+    }
+  }
+  'item_rubrics.versions': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/rubric/versions'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_rubrics_controller').default['versions']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_rubrics_controller').default['versions']>>>
+    }
+  }
+  'item_rubrics.update': {
+    methods: ["PUT"]
+    pattern: '/items/:itemId/rubric'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').saveRubricValidator)>>
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').saveRubricValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_rubrics_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_rubrics_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'item_levels.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/levels'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_levels_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_levels_controller').default['index']>>>
+    }
+  }
+  'item_levels.update': {
+    methods: ["PUT"]
+    pattern: '/items/:itemId/levels'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').saveLevelsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').saveLevelsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_levels_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_levels_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'item_permissions.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/permissions'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_permissions_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_permissions_controller').default['show']>>>
+    }
+  }
+  'item_permissions.update': {
+    methods: ["PUT"]
+    pattern: '/items/:itemId/permissions'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').savePermissionsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').savePermissionsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_permissions_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_permissions_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'item_enrollments.enrollment': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/enroll'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['enrollment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['enrollment']>>>
+    }
+  }
+  'item_enrollments.update_enrollment': {
+    methods: ["POST"]
+    pattern: '/items/:itemId/enroll'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').enrollStudentsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').enrollStudentsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['updateEnrollment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['updateEnrollment']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'item_enrollments.enrollments': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/enrollments'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['enrollments']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['enrollments']>>>
+    }
+  }
+  'item_enrollments.eligible_students': {
+    methods: ["GET","HEAD"]
+    pattern: '/items/:itemId/eligible-students'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { itemId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['eligibleStudents']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['eligibleStudents']>>>
+    }
+  }
+  'item_enrollments.destroy': {
+    methods: ["DELETE"]
+    pattern: '/items/:itemId/enroll/:studentSuid'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { itemId: ParamValue; studentSuid: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/item_enrollments_controller').default['destroy']>>>
+    }
+  }
+  'dashboard_widgets.manage': {
+    methods: ["GET","HEAD"]
+    pattern: '/dashboard/widgets/manage'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['manage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['manage']>>>
+    }
+  }
+  'dashboard_widgets.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/dashboard/widgets'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['index']>>>
+    }
+  }
+  'dashboard_widgets.store': {
+    methods: ["POST"]
+    pattern: '/dashboard/widgets'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').createWidgetValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').createWidgetValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'dashboard_widgets.update': {
+    methods: ["PUT"]
+    pattern: '/dashboard/widgets/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').updateWidgetValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').updateWidgetValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'dashboard_widgets.set_active': {
+    methods: ["PATCH"]
+    pattern: '/dashboard/widgets/:id/active'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/functionality').activeToggleValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/functionality').activeToggleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['setActive']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['setActive']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'dashboard_widgets.destroy': {
+    methods: ["DELETE"]
+    pattern: '/dashboard/widgets/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_widgets_controller').default['destroy']>>>
+    }
+  }
+  'me.navigation': {
+    methods: ["GET","HEAD"]
+    pattern: '/me/navigation'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/me_controller').default['navigation']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/me_controller').default['navigation']>>>
+    }
+  }
+  'me.items': {
+    methods: ["GET","HEAD"]
+    pattern: '/me/items'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/me_controller').default['items']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/me_controller').default['items']>>>
     }
   }
   'dashboard.stats': {
@@ -943,6 +1411,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['peerMessages']>>>
     }
   }
+  'chat_messages.read_peer': {
+    methods: ["POST"]
+    pattern: '/chat/peer/:peerId/read'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').markReadValidator)>>
+      paramsTuple: [ParamValue]
+      params: { peerId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').markReadValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['readPeer']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['readPeer']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'chat_messages.conv_messages': {
     methods: ["GET","HEAD"]
     pattern: '/chat/:convKey/messages'
@@ -1013,6 +1493,18 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#validators/chat').typingValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['typing']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_messages_controller').default['typing']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'chat_reactions.set': {
+    methods: ["PUT"]
+    pattern: '/chat/reactions'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/chat').reactionValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/chat').reactionValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/chat_reactions_controller').default['set']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/chat_reactions_controller').default['set']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
 }

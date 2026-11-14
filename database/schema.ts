@@ -83,6 +83,25 @@ export class ChatConversationSchema extends BaseModel {
   declare userLowId: bigint | number
 }
 
+export class ChatMessageReactionSchema extends BaseModel {
+  static $columns = ['createdAt', 'emoji', 'id', 'messageId', 'scope', 'updatedAt', 'userId'] as const
+  $columns = ChatMessageReactionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare emoji: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare messageId: bigint | number
+  @column()
+  declare scope: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: bigint | number
+}
+
 export class ChatMessageSchema extends BaseModel {
   static $columns = ['body', 'clientId', 'conversationId', 'createdAt', 'deletedAt', 'id', 'senderId'] as const
   $columns = ChatMessageSchema.$columns
@@ -134,6 +153,52 @@ export class DailyDarshanSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class DashboardWidgetSchema extends BaseModel {
+  static $columns = ['config', 'createdAt', 'functionalityId', 'id', 'isActive', 'itemId', 'roles', 'sortOrder', 'title', 'updatedAt', 'widgetType'] as const
+  $columns = DashboardWidgetSchema.$columns
+  @column()
+  declare config: any
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare functionalityId: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare itemId: number | null
+  @column()
+  declare roles: any
+  @column()
+  declare sortOrder: number
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare widgetType: string
+}
+
+export class DepartmentFunctionalitySchema extends BaseModel {
+  static $columns = ['createdAt', 'departmentId', 'functionalityId', 'id', 'isEnabled', 'itemLabel', 'updatedAt'] as const
+  $columns = DepartmentFunctionalitySchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare departmentId: number
+  @column()
+  declare functionalityId: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isEnabled: boolean
+  @column()
+  declare itemLabel: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class DepartmentSchema extends BaseModel {
   static $columns = ['createdAt', 'departmentHeadId', 'departmentId', 'departmentName', 'description', 'updatedAt'] as const
   $columns = DepartmentSchema.$columns
@@ -149,6 +214,71 @@ export class DepartmentSchema extends BaseModel {
   declare description: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class FunctionalitySchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'evaluatorType', 'icon', 'id', 'isActive', 'key', 'name', 'themeColor', 'updatedAt'] as const
+  $columns = FunctionalitySchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column()
+  declare evaluatorType: string
+  @column()
+  declare icon: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare key: string
+  @column()
+  declare name: string
+  @column()
+  declare themeColor: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class FunctionalityItemSchema extends BaseModel {
+  static $columns = ['createdAt', 'departmentId', 'functionalityId', 'icon', 'id', 'isActive', 'name', 'updatedAt'] as const
+  $columns = FunctionalityItemSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare departmentId: number
+  @column()
+  declare functionalityId: number
+  @column()
+  declare icon: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isActive: boolean
+  @column()
+  declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class GroupMessageSchema extends BaseModel {
+  static $columns = ['body', 'clientId', 'createdAt', 'deletedAt', 'groupId', 'id', 'senderId'] as const
+  $columns = GroupMessageSchema.$columns
+  @column()
+  declare body: string
+  @column()
+  declare clientId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare groupId: number
+  @column({ isPrimary: true })
+  declare id: bigint | number
+  @column()
+  declare senderId: bigint | number
 }
 
 export class GroupSchema extends BaseModel {
@@ -170,8 +300,71 @@ export class GroupSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class ItemLevelSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'itemId', 'levelNo', 'minPoints', 'name', 'promoteMode', 'updatedAt'] as const
+  $columns = ItemLevelSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare itemId: number
+  @column()
+  declare levelNo: number
+  @column()
+  declare minPoints: number
+  @column()
+  declare name: string
+  @column()
+  declare promoteMode: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ItemPermissionSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'itemId', 'roleCode', 'sectionId', 'updatedAt', 'userSuid'] as const
+  $columns = ItemPermissionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare itemId: number
+  @column()
+  declare roleCode: string | null
+  @column()
+  declare sectionId: number | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userSuid: bigint | number | null
+}
+
+export class ItemRubricSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'criteria', 'id', 'isCurrent', 'itemId', 'maxPoints', 'updatedAt', 'version'] as const
+  $columns = ItemRubricSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: bigint | number | null
+  @column()
+  declare criteria: any
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isCurrent: boolean
+  @column()
+  declare itemId: number
+  @column()
+  declare maxPoints: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare version: number
+}
+
 export class LessonSubmissionSchema extends BaseModel {
-  static $columns = ['aiError', 'aiPercent', 'aiPoints', 'aiResult', 'aiStatus', 'createdAt', 'finalPoints', 'lessonId', 'mediaPublicId', 'mediaUrl', 'needsReview', 'skipReason', 'source', 'studentId', 'submissionId', 'teacherFeedback', 'teacherPoints', 'updatedAt'] as const
+  static $columns = ['aiError', 'aiPercent', 'aiPoints', 'aiResult', 'aiStatus', 'createdAt', 'criteriaScores', 'finalPoints', 'itemId', 'lessonId', 'mediaPublicId', 'mediaUrl', 'needsReview', 'rubricSnapshot', 'skipReason', 'source', 'studentId', 'submissionId', 'teacherFeedback', 'teacherPoints', 'updatedAt'] as const
   $columns = LessonSubmissionSchema.$columns
   @column()
   declare aiError: string | null
@@ -186,7 +379,11 @@ export class LessonSubmissionSchema extends BaseModel {
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
+  declare criteriaScores: any | null
+  @column()
   declare finalPoints: number | null
+  @column()
+  declare itemId: number | null
   @column()
   declare lessonId: number
   @column()
@@ -195,6 +392,8 @@ export class LessonSubmissionSchema extends BaseModel {
   declare mediaUrl: string
   @column()
   declare needsReview: boolean
+  @column()
+  declare rubricSnapshot: any | null
   @column()
   declare skipReason: string | null
   @column()
@@ -212,7 +411,7 @@ export class LessonSubmissionSchema extends BaseModel {
 }
 
 export class LessonSchema extends BaseModel {
-  static $columns = ['assignDepartmentId', 'assignGroupId', 'assignHeadOnly', 'assignScope', 'assignSectionId', 'assignStudentId', 'createdAt', 'createdBy', 'dateEnd', 'dateStart', 'departmentId', 'description', 'lessonId', 'lessonTitle', 'lessonType', 'mediaPublicId', 'mediaUrl', 'progressPoints', 'roleCode', 'thumbnailPublicId', 'thumbnailUrl', 'updatedAt'] as const
+  static $columns = ['assignDepartmentId', 'assignGroupId', 'assignHeadOnly', 'assignScope', 'assignSectionId', 'assignStudentId', 'createdAt', 'createdBy', 'dateEnd', 'dateStart', 'departmentId', 'description', 'functionalityId', 'itemId', 'lessonId', 'lessonTitle', 'lessonType', 'mediaPublicId', 'mediaUrl', 'progressPoints', 'roleCode', 'rubricVersion', 'thumbnailPublicId', 'thumbnailUrl', 'updatedAt'] as const
   $columns = LessonSchema.$columns
   @column()
   declare assignDepartmentId: number | null
@@ -238,6 +437,10 @@ export class LessonSchema extends BaseModel {
   declare departmentId: number | null
   @column()
   declare description: string | null
+  @column()
+  declare functionalityId: number | null
+  @column()
+  declare itemId: number | null
   @column({ isPrimary: true })
   declare lessonId: number
   @column()
@@ -252,6 +455,8 @@ export class LessonSchema extends BaseModel {
   declare progressPoints: number | null
   @column()
   declare roleCode: string | null
+  @column()
+  declare rubricVersion: number | null
   @column()
   declare thumbnailPublicId: string | null
   @column()
@@ -404,6 +609,48 @@ export class SectionSchema extends BaseModel {
   declare sectionId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class StudentItemProgressSchema extends BaseModel {
+  static $columns = ['id', 'itemId', 'levelNoAtTime', 'points', 'recordedAt', 'studentSuid', 'submissionId'] as const
+  $columns = StudentItemProgressSchema.$columns
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare itemId: number
+  @column()
+  declare levelNoAtTime: number
+  @column()
+  declare points: string
+  @column.dateTime()
+  declare recordedAt: DateTime
+  @column()
+  declare studentSuid: bigint | number
+  @column()
+  declare submissionId: number | null
+}
+
+export class StudentItemSchema extends BaseModel {
+  static $columns = ['assignedBy', 'createdAt', 'currentLevelNo', 'id', 'itemId', 'startedAt', 'studentSuid', 'totalPoints', 'updatedAt'] as const
+  $columns = StudentItemSchema.$columns
+  @column()
+  declare assignedBy: bigint | number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currentLevelNo: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare itemId: number
+  @column.dateTime()
+  declare startedAt: DateTime | null
+  @column()
+  declare studentSuid: bigint | number
+  @column()
+  declare totalPoints: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class TaskSchema extends BaseModel {

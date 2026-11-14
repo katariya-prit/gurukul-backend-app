@@ -4,29 +4,46 @@ import Role from '#models/role'
 
 type PermissionAction = 'view' | 'create' | 'edit' | 'delete'
 
+interface PermissionCheck {
+  module: string
+  action: PermissionAction
+}
+
 export default class PermissionMiddleware {
   async handle(
     { auth, response }: HttpContext,
     next: NextFn,
-    options: { module: string; action: PermissionAction }
+    options: PermissionCheck & { anyOf?: PermissionCheck[] }
   ) {
     const user = auth.getUserOrFail()
 
-    if (user.roleCode !== 'SUPER_ADMIN') {
-      if (options.module === 'Dashboard' && options.action === 'view' && user.roleCode === 'STUDENT') {
-        return next()
-      }
+    if (user.roleCode === 'SUPER_ADMIN') {
+      return next()
+    }
 
-      const role = await Role.find(user.roleCode)
-      const permissions = role?.permissions as
-        Record<string, Partial<Record<PermissionAction, boolean>>> | undefined
+    if (options.module === 'Dashboard' && options.action === 'view' && user.roleCode === 'STUDENT') {
+      return next()
+    }
 
-      if (!permissions?.[options.module]?.[options.action]) {
-        return response.forbidden({
-          success: false,
-          message: `Missing permission: ${options.module}.${options.action}`,
-        })
-      }
+    const role = await Role.find(user.roleCode)
+    const permissions = role?.permissions as
+      | Record<string, Partial<Record<PermissionAction, boolean>>>
+      | undefined
+
+    const checks: PermissionCheck[] = [{ module: options.module, action: options.action }]
+    if (options.anyOf && options.anyOf.length > 0) {
+      checks.push(...options.anyOf)
+    }
+
+    const hasPermission = checks.some(
+      (check) => permissions?.[check.module]?.[check.action] === true
+    )
+
+    if (!hasPermission) {
+      return response.forbidden({
+        success: false,
+        message: `Missing permission: ${options.module}.${options.action}`,
+      })
     }
 
     return next()

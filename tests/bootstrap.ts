@@ -7,6 +7,7 @@ import { dbAssertions } from '@adonisjs/lucid/plugins/db'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { authApiClient } from '@adonisjs/auth/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
+import env from '#start/env'
 import type { Registry } from '../.adonisjs/client/registry/schema.d.ts'
 
 /**
@@ -41,7 +42,22 @@ export const plugins: Config['plugins'] = [
  * The teardown functions are executed after all the tests
  */
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
-  setup: [],
+  setup: [
+    async () => {
+      const databaseUrl = env.get('DATABASE_URL')
+      const databaseName = databaseUrl
+        ? decodeURIComponent(new URL(databaseUrl).pathname.split('/').pop() ?? '')
+        : env.get('DB_DATABASE')
+
+      if (env.get('NODE_ENV') !== 'test' || !databaseName?.endsWith('_test')) {
+        await app.terminate()
+        throw new Error('Refusing to run tests against a non-test database')
+      }
+
+      await testUtils.db().migrate()
+      await testUtils.db().seed()
+    },
+  ],
   teardown: [],
 }
 

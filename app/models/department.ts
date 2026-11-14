@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
+import DepartmentFunctionality from './department_functionality.js'
 
 export default class Department extends BaseModel {
   public static table = 'departments'
@@ -37,4 +38,10 @@ export default class Department extends BaseModel {
     localKey: 'departmentId',
   })
   declare users: HasMany<typeof User>
+
+  @hasMany(() => DepartmentFunctionality, {
+    foreignKey: 'departmentId',
+    localKey: 'departmentId',
+  })
+  declare departmentFunctionalities: HasMany<typeof DepartmentFunctionality>
 }

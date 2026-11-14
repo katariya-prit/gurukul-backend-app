@@ -1,0 +1,543 @@
+### Gurukul — Functionality API HTTP Collection
+### Use with VS Code REST Client extension or any HTTP client that understands .http files
+### Variables: set @token after running the Login request
+
+@baseUrl = http://localhost:3333
+@token = REPLACE_WITH_TOKEN_FROM_LOGIN
+
+###############################################################################
+# AUTH
+###############################################################################
+
+### Login as SUPER_ADMIN → copy token from response into @token above
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "username": "super-admin",
+  "password": "admin123"
+}
+
+###
+
+### Login as HEAD100 (tirth)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "username": "tirth",
+  "password": "tirth123"
+}
+
+###############################################################################
+# HEALTH
+###############################################################################
+
+### Health check (no auth)
+GET {{baseUrl}}/health
+
+###############################################################################
+# FUNCTIONALITIES
+###############################################################################
+
+### List all functionalities (paginated)
+GET {{baseUrl}}/functionalities?page=1&limit=20
+Authorization: Bearer {{token}}
+
+###
+
+### List only active functionalities
+GET {{baseUrl}}/functionalities?isActive=true
+Authorization: Bearer {{token}}
+
+###
+
+### Search functionalities
+GET {{baseUrl}}/functionalities?search=Instrumental
+Authorization: Bearer {{token}}
+
+###
+
+### Get single functionality
+GET {{baseUrl}}/functionalities/1
+Authorization: Bearer {{token}}
+
+###
+
+### Create functionality
+POST {{baseUrl}}/functionalities
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Drama Evaluation",
+  "key": "drama_eval",
+  "description": "Evaluate drama performances",
+  "icon": "theater",
+  "themeColor": "#7c3aed",
+  "evaluatorType": "teacher",
+  "isActive": true
+}
+
+###
+
+### Update functionality
+PUT {{baseUrl}}/functionalities/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Instrumental Marking",
+  "description": "Updated description",
+  "evaluatorType": "both"
+}
+
+###
+
+### Toggle functionality active/inactive
+PATCH {{baseUrl}}/functionalities/1/active
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+
+### Soft-delete functionality (sets is_active = false)
+DELETE {{baseUrl}}/functionalities/1
+Authorization: Bearer {{token}}
+
+###############################################################################
+# FUNCTIONALITY ↔ DEPARTMENT ASSIGNMENTS
+###############################################################################
+
+### List departments assigned to a functionality
+GET {{baseUrl}}/functionalities/1/departments
+Authorization: Bearer {{token}}
+
+###
+
+### Bulk-assign departments to a functionality (replaces current set)
+PUT {{baseUrl}}/functionalities/1/departments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "departments": [
+    { "departmentId": 1, "isEnabled": true, "itemLabel": "Instrument" },
+    { "departmentId": 2, "isEnabled": true, "itemLabel": "Style" }
+  ]
+}
+
+###
+
+### List functionalities for a department
+GET {{baseUrl}}/departments/1/functionalities
+Authorization: Bearer {{token}}
+
+###
+
+### Set functionalities for a department (replaces current set)
+PUT {{baseUrl}}/departments/1/functionalities
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "functionalities": [
+    { "functionalityId": 1, "isEnabled": true, "itemLabel": "Instrument" },
+    { "functionalityId": 2, "isEnabled": false, "itemLabel": "Style" }
+  ]
+}
+
+###############################################################################
+# ITEMS
+###############################################################################
+
+### List all items (global)
+GET {{baseUrl}}/items?page=1&limit=20
+Authorization: Bearer {{token}}
+
+###
+
+### Filter items by functionality and department
+GET {{baseUrl}}/items?functionalityId=1&departmentId=1&isActive=true
+Authorization: Bearer {{token}}
+
+###
+
+### Item summaries (rubric + levels + permissions in one call — no N+1)
+GET {{baseUrl}}/items/summaries?page=1&limit=20
+Authorization: Bearer {{token}}
+
+###
+
+### Item summaries filtered
+GET {{baseUrl}}/items/summaries?functionalityId=1&departmentId=1
+Authorization: Bearer {{token}}
+
+###
+
+### Items for a specific functionality
+GET {{baseUrl}}/functionalities/1/items
+Authorization: Bearer {{token}}
+
+###
+
+### Items for a functionality filtered by department
+GET {{baseUrl}}/functionalities/1/items?departmentId=1
+Authorization: Bearer {{token}}
+
+###
+
+### Get single item
+GET {{baseUrl}}/items/1
+Authorization: Bearer {{token}}
+
+###
+
+### Create item under a functionality (department must have functionality enabled)
+POST {{baseUrl}}/functionalities/1/items
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "departmentId": 1,
+  "name": "Flute",
+  "icon": "music"
+}
+
+###
+
+### Update item
+PUT {{baseUrl}}/items/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Tabla (Advanced)",
+  "icon": "drum"
+}
+
+###
+
+### Toggle item active
+PATCH {{baseUrl}}/items/1/active
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+
+### Soft-delete item
+DELETE {{baseUrl}}/items/1
+Authorization: Bearer {{token}}
+
+###############################################################################
+# RUBRICS
+###############################################################################
+
+### Get all rubric versions for an item (array; isCurrent flag per version)
+GET {{baseUrl}}/items/1/rubric
+Authorization: Bearer {{token}}
+
+###
+
+### Get rubric versions (alias)
+GET {{baseUrl}}/items/1/rubric/versions
+Authorization: Bearer {{token}}
+
+###
+
+### Save new rubric version (old isCurrent → false, new version created)
+### Weights must sum exactly to 100; unique criterion keys; maxPoints >= 0
+PUT {{baseUrl}}/items/1/rubric
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "criteria": [
+    { "key": "accuracy",   "label": "Accuracy",   "weight": 35, "maxPoints": 35 },
+    { "key": "technique",  "label": "Technique",  "weight": 35, "maxPoints": 35 },
+    { "key": "expression", "label": "Expression", "weight": 30, "maxPoints": 30 }
+  ]
+}
+
+###
+
+### Save rubric — weight validation failure (weights 40+40 = 80, not 100 → 422)
+PUT {{baseUrl}}/items/1/rubric
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "criteria": [
+    { "key": "c1", "label": "C1", "weight": 40, "maxPoints": 40 },
+    { "key": "c2", "label": "C2", "weight": 40, "maxPoints": 40 }
+  ]
+}
+
+###############################################################################
+# LEVELS
+###############################################################################
+
+### Get levels for an item
+GET {{baseUrl}}/items/1/levels
+Authorization: Bearer {{token}}
+
+###
+
+### Replace level set (first minPoints must be 0; strictly increasing; unique levelNo)
+PUT {{baseUrl}}/items/1/levels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "levels": [
+    { "levelNo": 1, "name": "Beginner",     "minPoints": 0,   "promoteMode": "auto" },
+    { "levelNo": 2, "name": "Intermediate", "minPoints": 100, "promoteMode": "auto" },
+    { "levelNo": 3, "name": "Advanced",     "minPoints": 300, "promoteMode": "manual" },
+    { "levelNo": 4, "name": "Expert",       "minPoints": 600, "promoteMode": "manual" }
+  ]
+}
+
+###
+
+### Level validation failure — first level minPoints != 0 → 422
+PUT {{baseUrl}}/items/1/levels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "levels": [
+    { "levelNo": 1, "name": "Bad", "minPoints": 50, "promoteMode": "auto" }
+  ]
+}
+
+###############################################################################
+# PERMISSIONS
+###############################################################################
+
+### Get current permissions for an item
+GET {{baseUrl}}/items/1/permissions
+Authorization: Bearer {{token}}
+
+###
+
+### Replace permissions (roleCodes + sectionIds + userSuids, any combination)
+PUT {{baseUrl}}/items/1/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roleCodes":  ["HEAD100", "SECHEAD101"],
+  "sectionIds": [],
+  "userSuids":  []
+}
+
+###
+
+### Grant access to a specific section
+PUT {{baseUrl}}/items/1/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roleCodes":  [],
+  "sectionIds": [1, 2],
+  "userSuids":  []
+}
+
+###############################################################################
+# ENROLLMENT
+###############################################################################
+
+### Enrollment overview for an item (counts + enrolled list)
+GET {{baseUrl}}/items/1/enroll
+Authorization: Bearer {{token}}
+
+###
+
+### Enroll students (idempotent — enrolling twice creates one record)
+POST {{baseUrl}}/items/1/enroll
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "studentSuids": [100, 101, 102],
+  "enrolled": true
+}
+
+###
+
+### Unenroll students
+POST {{baseUrl}}/items/1/enroll
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "studentSuids": [102],
+  "enrolled": false
+}
+
+###
+
+### Full enrollment detail list
+GET {{baseUrl}}/items/1/enrollments
+Authorization: Bearer {{token}}
+
+###
+
+### Eligible students for enrollment (not yet enrolled in this item)
+GET {{baseUrl}}/items/1/eligible-students
+Authorization: Bearer {{token}}
+
+###
+
+### Remove a single student enrollment
+DELETE {{baseUrl}}/items/1/enroll/100
+Authorization: Bearer {{token}}
+
+###############################################################################
+# DASHBOARD WIDGETS
+###############################################################################
+
+### All widgets — manage view (SUPER_ADMIN)
+GET {{baseUrl}}/dashboard/widgets/manage
+Authorization: Bearer {{token}}
+
+###
+
+### Widgets visible to current user role
+GET {{baseUrl}}/dashboard/widgets
+Authorization: Bearer {{token}}
+
+###
+
+### Create widget
+POST {{baseUrl}}/dashboard/widgets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "functionalityId": 1,
+  "itemId": null,
+  "widgetType": "progressRing",
+  "title": "My Progress Ring",
+  "config": { "colorScheme": "blue" },
+  "roles": ["STUDENT", "HEAD100"],
+  "sortOrder": 1,
+  "isActive": true
+}
+
+###
+
+### Update widget
+PUT {{baseUrl}}/dashboard/widgets/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Widget Title",
+  "sortOrder": 2
+}
+
+###
+
+### Toggle widget active
+PATCH {{baseUrl}}/dashboard/widgets/1/active
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+
+### Delete widget
+DELETE {{baseUrl}}/dashboard/widgets/1
+Authorization: Bearer {{token}}
+
+###############################################################################
+# LOOKUPS
+###############################################################################
+
+### All departments (dropdown)
+GET {{baseUrl}}/lookups/departments?all=true
+Authorization: Bearer {{token}}
+
+###
+
+### All sections (dropdown)
+GET {{baseUrl}}/lookups/sections?all=true
+Authorization: Bearer {{token}}
+
+###
+
+### Sections filtered by department
+GET {{baseUrl}}/lookups/sections?departmentId=1
+Authorization: Bearer {{token}}
+
+###
+
+### All roles
+GET {{baseUrl}}/lookups/roles
+Authorization: Bearer {{token}}
+
+###
+
+### Users list
+GET {{baseUrl}}/lookups/users?departmentId=1&roleCode=STUDENT
+Authorization: Bearer {{token}}
+
+###
+
+### Navigation items for sidebar (cached 60s)
+GET {{baseUrl}}/me/navigation
+Authorization: Bearer {{token}}
+
+###
+
+### Items accessible to current user
+GET {{baseUrl}}/me/items
+Authorization: Bearer {{token}}
+
+###############################################################################
+# ME
+###############################################################################
+
+### Current user profile
+GET {{baseUrl}}/me
+Authorization: Bearer {{token}}
+
+###############################################################################
+# ERROR CASES (expected failures)
+###############################################################################
+
+### No auth → 401
+GET {{baseUrl}}/functionalities
+
+###
+
+### Unknown route → JSON 404 (never HTML)
+GET {{baseUrl}}/this/does/not/exist
+Authorization: Bearer {{token}}
+
+###
+
+### Non-admin creating functionality → 403
+### (login as tirth first and paste that token below)
+POST {{baseUrl}}/functionalities
+Authorization: Bearer PASTE_NON_ADMIN_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "name": "Forbidden",
+  "key": "forbidden",
+  "evaluatorType": "teacher"
+}

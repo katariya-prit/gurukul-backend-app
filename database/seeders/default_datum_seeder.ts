@@ -26,6 +26,7 @@ export default class extends BaseSeeder {
           Lesson: { edit: false, view: true, create: true, delete: false },
           Activities: { edit: false, view: false, create: false, delete: false },
           UpcomingEvents: { edit: false, view: false, create: false, delete: false },
+          Functionality: { edit: false, view: false, create: false, delete: false },
         },
       },
       {
@@ -51,6 +52,7 @@ export default class extends BaseSeeder {
           Lesson: { edit: true, view: true, create: true, delete: false },
           Activities: { edit: false, view: false, create: false, delete: false },
           UpcomingEvents: { edit: false, view: false, create: false, delete: false },
+          Functionality: { edit: false, view: false, create: false, delete: false },
         },
       },
       {
@@ -67,6 +69,7 @@ export default class extends BaseSeeder {
           Chat: { edit: false, view: false, create: false, delete: false },
           Activities: { edit: false, view: false, create: false, delete: false },
           UpcomingEvents: { edit: false, view: false, create: false, delete: false },
+          Functionality: { edit: false, view: false, create: false, delete: false },
         },
       },
       {
@@ -92,6 +95,7 @@ export default class extends BaseSeeder {
           Lesson: { edit: true, view: true, create: true, delete: true },
           Activities: { edit: true, view: true, create: true, delete: true },
           UpcomingEvents: { edit: true, view: true, create: true, delete: true },
+          Functionality: { edit: true, view: true, create: true, delete: true },
         },
       },
       {
@@ -115,6 +119,7 @@ export default class extends BaseSeeder {
           Lesson: { edit: false, view: false, create: false, delete: false },
           Activities: { edit: false, view: false, create: false, delete: false },
           UpcomingEvents: { edit: false, view: false, create: false, delete: false },
+          Functionality: { edit: false, view: false, create: false, delete: false },
         },
       },
     ]
@@ -127,7 +132,10 @@ export default class extends BaseSeeder {
         ON CONFLICT (role_code) DO UPDATE SET
           role_name = EXCLUDED.role_name,
           description = EXCLUDED.description,
-          permissions = EXCLUDED.permissions
+          permissions = COALESCE(roles.permissions, '{}'::jsonb) || jsonb_build_object(
+            'Functionality',
+            COALESCE(roles.permissions->'Functionality', EXCLUDED.permissions->'Functionality')
+          )
         `,
         {
           roleCode: role.roleCode,

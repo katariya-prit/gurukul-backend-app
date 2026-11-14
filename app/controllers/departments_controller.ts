@@ -2,57 +2,60 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Department from '#models/department'
 import User from '#models/user'
 import { createDepartmentValidator, updateDepartmentValidator } from '#validators/department'
+import DepartmentFunctionalityService from '#services/department_functionality_service'
+
+const deptFuncService = new DepartmentFunctionalityService()
 
 export default class DepartmentsController {
-  // GET /departments
   public async index({ response, auth }: HttpContext) {
     try {
       const currentUser = auth.getUserOrFail()
       const query = Department.query().preload('departmentHead').orderBy('department_id', 'asc')
 
-      if (currentUser.roleCode === 'SUPER_ADMIN') {
-        const departments = await query
-        return this.formatDepartments(response, departments)
-      }
+      let departments: Department[]
 
-      if (
-        !['HEAD100', 'SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) ||
-        !currentUser.departmentId
+      if (currentUser.roleCode === 'SUPER_ADMIN') {
+        departments = await query
+      } else if (
+        ['HEAD100', 'SECHEAD101', 'STUDENT'].includes(currentUser.roleCode) &&
+        currentUser.departmentId
       ) {
+        departments = await query.where('department_id', currentUser.departmentId)
+      } else {
         return response.forbidden({
           success: false,
           message: 'You cannot view departments outside your assigned scope.',
         })
       }
 
-      const departments = await query.where('department_id', currentUser.departmentId)
-      return this.formatDepartments(response, departments)
-    } catch (error: any) {
-      return response
-        .status(500)
-        .json({ success: false, message: error.message || 'Internal Server Error' })
+      const deptIds = departments.map((d) => d.departmentId)
+      const funcMap = await deptFuncService.getEnabledCountForDepartments(deptIds)
+
+      const formatted = departments.map((dept) => {
+        const json = dept.toJSON()
+        const funcEntry = funcMap.get(dept.departmentId)
+        return {
+          ...json,
+          id: dept.departmentId,
+          department_id: dept.departmentId,
+          departmentHeadName: dept.departmentHead?.name ?? null,
+          functionalityCount: funcEntry?.count ?? 0,
+          functionalities: funcEntry?.items ?? [],
+        }
+      })
+
+      return response.status(200).json({
+        success: true,
+        message: 'All departments fetched successfully.',
+        data: formatted,
+      })
+    } catch (error: unknown) {
+      const e = error as Error
+      return response.status(500).json({ success: false, message: e.message || 'Internal Server Error' })
     }
   }
 
-  private formatDepartments(response: HttpContext['response'], departments: Department[]) {
-    const formatted = departments.map((dept) => {
-      const json = dept.toJSON()
-      return {
-        ...json,
-        departmentHeadName: dept.departmentHead?.name || null,
-      }
-    })
-
-    return response.status(200).json({
-      success: true,
-      message: 'All departments fetched successfully.',
-      data: formatted,
-    })
-  }
-
-  // POST /departments/create
   public async store({ request, response }: HttpContext) {
-    console.log('✅ store reached, body:', request.body())
     try {
       const payload = await request.validateUsing(createDepartmentValidator)
 
@@ -62,35 +65,35 @@ export default class DepartmentsController {
         description: payload.description ?? '',
       })
 
+      const json = newDept.toJSON()
+
       return response.status(201).json({
         success: true,
         message: 'Department created successfully!',
-        data: newDept,
+        data: {
+          ...json,
+          id: newDept.departmentId,
+          department_id: newDept.departmentId,
+          departmentId: newDept.departmentId,
+          functionalityCount: 0,
+          functionalities: [],
+        },
       })
-    } catch (error: any) {
-      if (error.code === '23505') {
-        return response.status(400).json({
-          success: false,
-          message: 'Department ID or name already exists.',
-        })
+    } catch (error: unknown) {
+      const e = error as NodeJS.ErrnoException & { messages?: unknown }
+      if (e.code === '23505') {
+        return response.status(400).json({ success: false, message: 'Department ID or name already exists.' })
       }
-      if (error.code === '23503') {
-        return response
-          .status(400)
-          .json({ success: false, message: 'Selected Department Head does not exist.' })
+      if (e.code === '23503') {
+        return response.status(400).json({ success: false, message: 'Selected Department Head does not exist.' })
       }
-      if (error.messages) {
-        return response
-          .status(422)
-          .json({ success: false, message: 'Validation failed', errors: error.messages })
+      if (e.messages) {
+        return response.status(422).json({ success: false, message: 'Validation failed', errors: e.messages })
       }
-      return response
-        .status(500)
-        .json({ success: false, message: error.message || 'Internal Server Error' })
+      return response.status(500).json({ success: false, message: e.message || 'Internal Server Error' })
     }
   }
 
-  // GET /departments/:id
   public async show({ params, response, auth }: HttpContext) {
     try {
       const deptId = Number(params.id)
@@ -119,22 +122,27 @@ export default class DepartmentsController {
         })
       }
 
+      const funcMap = await deptFuncService.getEnabledCountForDepartments([deptId])
+      const funcEntry = funcMap.get(deptId)
       const json = department.toJSON()
+
       return response.status(200).json({
         success: true,
         data: {
           ...json,
-          departmentHeadName: department.departmentHead?.name || null,
+          id: department.departmentId,
+          department_id: department.departmentId,
+          departmentHeadName: department.departmentHead?.name ?? null,
+          functionalityCount: funcEntry?.count ?? 0,
+          functionalities: funcEntry?.items ?? [],
         },
       })
-    } catch (error: any) {
-      return response
-        .status(500)
-        .json({ success: false, message: error.message || 'Internal Server Error' })
+    } catch (error: unknown) {
+      const e = error as Error
+      return response.status(500).json({ success: false, message: e.message || 'Internal Server Error' })
     }
   }
 
-  // PUT /departments/:id
   public async update({ params, request, response }: HttpContext) {
     try {
       const departmentId = Number(params.id)
@@ -152,44 +160,43 @@ export default class DepartmentsController {
       department.merge({
         departmentName: payload.departmentName ?? department.departmentName,
         departmentHeadId:
-          payload.departmentHeadId !== undefined
-            ? payload.departmentHeadId
-            : department.departmentHeadId,
-        description:
-          payload.description !== undefined ? payload.description : department.description,
+          payload.departmentHeadId !== undefined ? payload.departmentHeadId : department.departmentHeadId,
+        description: payload.description !== undefined ? payload.description : department.description,
       })
 
       await department.save()
 
+      const funcMap = await deptFuncService.getEnabledCountForDepartments([departmentId])
+      const funcEntry = funcMap.get(departmentId)
+      const json = department.toJSON()
+
       return response.status(200).json({
         success: true,
         message: 'Department updated successfully.',
-        data: department,
+        data: {
+          ...json,
+          id: department.departmentId,
+          department_id: department.departmentId,
+          departmentId: department.departmentId,
+          functionalityCount: funcEntry?.count ?? 0,
+          functionalities: funcEntry?.items ?? [],
+        },
       })
-    } catch (error: any) {
-      if (error.code === '23505') {
-        return response
-          .status(400)
-          .json({ success: false, message: 'Department name already exists.' })
+    } catch (error: unknown) {
+      const e = error as NodeJS.ErrnoException & { messages?: unknown; code?: string }
+      if (e.code === '23505') {
+        return response.status(400).json({ success: false, message: 'Department name already exists.' })
       }
-      if (error.code === '23503') {
-        return response
-          .status(400)
-          .json({ success: false, message: 'Selected Department Head does not exist.' })
+      if (e.code === '23503') {
+        return response.status(400).json({ success: false, message: 'Selected Department Head does not exist.' })
       }
-      if (error.messages) {
-        return response
-          .status(422)
-          .json({ success: false, message: 'Validation failed', errors: error.messages })
+      if (e.messages) {
+        return response.status(422).json({ success: false, message: 'Validation failed', errors: e.messages })
       }
-      // 🎯 FIX: pehla 404 hatu, have 500 (unexpected error ne "not found" na kaho)
-      return response
-        .status(500)
-        .json({ success: false, message: error.message || 'Internal Server Error' })
+      return response.status(500).json({ success: false, message: e.message || 'Internal Server Error' })
     }
   }
 
-  // DELETE /departments/delete/:id
   public async destroy({ params, response }: HttpContext) {
     try {
       const deptId = Number(params.id)
@@ -209,14 +216,12 @@ export default class DepartmentsController {
         message: 'Department deleted successfully.',
         data: department,
       })
-    } catch (error: any) {
-      return response
-        .status(500)
-        .json({ success: false, message: error.message || 'Internal Server Error' })
+    } catch (error: unknown) {
+      const e = error as Error
+      return response.status(500).json({ success: false, message: e.message || 'Internal Server Error' })
     }
   }
 
-  // GET /departments/:id/users
   public async usersByDepartment({ params, response, auth }: HttpContext) {
     try {
       const deptId = Number(params.id)
@@ -250,10 +255,9 @@ export default class DepartmentsController {
       const users = await query
 
       return response.status(200).json({ success: true, data: users })
-    } catch (error: any) {
-      return response
-        .status(500)
-        .json({ success: false, message: error.message || 'Internal Server Error' })
+    } catch (error: unknown) {
+      const e = error as Error
+      return response.status(500).json({ success: false, message: e.message || 'Internal Server Error' })
     }
   }
 }

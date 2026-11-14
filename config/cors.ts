@@ -22,9 +22,9 @@ const corsConfig = defineConfig({
       return true
     }
 
-    const corsOriginEnv = env.get('CORS_ORIGIN')
-    if (corsOriginEnv) {
-      const allowed = corsOriginEnv.split(',').map((o) => o.trim())
+    const corsOriginsEnv = env.get('CORS_ORIGINS') || env.get('CORS_ORIGIN')
+    if (corsOriginsEnv) {
+      const allowed = corsOriginsEnv.split(',').map((o) => o.trim())
       if (allowed.includes(origin)) {
         return true
       }
@@ -33,7 +33,7 @@ const corsConfig = defineConfig({
     return false
   },
 
-  methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 
   headers: true,
 

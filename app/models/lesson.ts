@@ -2,6 +2,8 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Department from '#models/department'
+import Functionality from '#models/functionality'
+import FunctionalityItem from '#models/functionality_item'
 import User from '#models/user'
 
 export default class Lesson extends BaseModel {
@@ -33,6 +35,15 @@ export default class Lesson extends BaseModel {
 
   @column({ columnName: 'department_id' })
   declare departmentId: number | null
+
+  @column({ columnName: 'functionality_id' })
+  declare functionalityId: number | null
+
+  @column({ columnName: 'item_id' })
+  declare itemId: number | null
+
+  @column({ columnName: 'rubric_version' })
+  declare rubricVersion: number | null
 
   @column.date({ columnName: 'date_start' })
   declare dateStart: DateTime
@@ -75,6 +86,12 @@ export default class Lesson extends BaseModel {
 
   @belongsTo(() => Department, { foreignKey: 'departmentId' })
   declare department: BelongsTo<typeof Department>
+
+  @belongsTo(() => Functionality, { foreignKey: 'functionalityId' })
+  declare functionality: BelongsTo<typeof Functionality>
+
+  @belongsTo(() => FunctionalityItem, { foreignKey: 'itemId' })
+  declare functionItem: BelongsTo<typeof FunctionalityItem>
 
   @belongsTo(() => User, { foreignKey: 'createdBy' })
   declare creator: BelongsTo<typeof User>

@@ -23,6 +23,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   AI_MAX_EVALS_PER_DAY: Env.schema.number.optional(),
   FRONTEND_URL: Env.schema.string.optional(),
   CORS_ORIGIN: Env.schema.string.optional(),
+  CORS_ORIGINS: Env.schema.string.optional(),
   CHAT_RATE_PER_MINUTE: Env.schema.number.optional(),
   REDIS_URL: Env.schema.string.optional(),
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),

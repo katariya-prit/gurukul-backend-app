@@ -1,17 +1,28 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 import transmit from '@adonisjs/transmit/services/main'
+import { errors } from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import { randomUUID } from 'node:crypto'
 import User from '#models/user'
 import ChatConversation from '#models/chat_conversation'
 import ChatMessage from '#models/chat_message'
 import UserBlock from '#models/user_block'
-import {
-  sendMessageValidator,
-  markReadValidator,
-  typingValidator,
-} from '#validators/chat'
+import { loadReactionMap } from '#services/chat_reaction_service'
+import { sendMessageValidator, markReadValidator, typingValidator } from '#validators/chat'
+
+const typingRateLimits = new Map<string, number>()
+const maxBigIntId = 9_223_372_036_854_775_807n
+
+const typingRateLimitCleanup = setInterval(() => {
+  const expiredBefore = Date.now() - 60_000
+  for (const [key, sentAt] of typingRateLimits) {
+    if (sentAt < expiredBefore) typingRateLimits.delete(key)
+  }
+}, 60_000)
+
+typingRateLimitCleanup.unref()
 
 function serializeMsg(m: any) {
   const createdAtIso = m.created_at
@@ -46,7 +57,7 @@ function serializeMsg(m: any) {
 }
 
 let groupMessagesTableReady = false
-async function ensureGroupMessagesTable() {
+export async function ensureGroupMessagesTable() {
   if (groupMessagesTableReady) return
   try {
     await db.rawQuery(`
@@ -96,18 +107,30 @@ export default class ChatMessagesController {
               u.name AS other_user_name,
               u.avatar AS other_user_avatar,
               u.role_code AS other_user_role_code,
+              my_read.last_read_message_id::text AS my_last_read_message_id,
+              other_read.last_read_message_id::text AS other_last_read_message_id,
               COALESCE(
                 (SELECT COUNT(*) 
                  FROM chat_messages cm 
                  WHERE cm.conversation_id = c.id 
                    AND cm.sender_id != :mySuid::bigint 
                    AND cm.deleted_at IS NULL
+                   AND cm.id > COALESCE(my_read.last_read_message_id, 0)
                 ), 0
               )::int AS unread_count
            FROM chat_conversations c
            JOIN users u ON u.suid = (
              CASE WHEN c.user_low_id = :mySuid::bigint THEN c.user_high_id ELSE c.user_low_id END
            )
+           LEFT JOIN chat_reads my_read
+             ON my_read.conversation_id = c.id
+            AND my_read.user_id = :mySuid::bigint
+           LEFT JOIN chat_reads other_read
+             ON other_read.conversation_id = c.id
+            AND other_read.user_id = CASE
+              WHEN c.user_low_id = :mySuid::bigint THEN c.user_high_id
+              ELSE c.user_low_id
+            END
            WHERE (c.user_low_id = :mySuid::bigint OR c.user_high_id = :mySuid::bigint)
              AND c.last_message_id IS NOT NULL
            ORDER BY c.last_message_at DESC NULLS LAST`,
@@ -137,6 +160,8 @@ export default class ChatMessagesController {
               last_message_preview: c.lastMessagePreview,
               last_message_at: c.lastMessageAt ? (c.lastMessageAt as any).toISO?.() || String(c.lastMessageAt) : null,
               unread_count: 0,
+              my_last_read_message_id: null,
+              other_last_read_message_id: null,
             }
           })
         } catch (fallbackErr) {
@@ -159,7 +184,14 @@ export default class ChatMessagesController {
           last_message_preview: row.last_message_preview,
           last_message_at: row.last_message_at ? new Date(row.last_message_at).toISOString() : null,
           unread_count: Number(row.unread_count || 0),
-          other_last_read_message_id: null,
+          my_last_read_message_id:
+            row.my_last_read_message_id === null || row.my_last_read_message_id === undefined
+              ? null
+              : String(row.my_last_read_message_id),
+          other_last_read_message_id:
+            row.other_last_read_message_id === null || row.other_last_read_message_id === undefined
+              ? null
+              : String(row.other_last_read_message_id),
         })),
       })
     } catch (err: any) {
@@ -198,9 +230,20 @@ export default class ChatMessagesController {
     }
 
     const list = await query
+    const reactionMap = await loadReactionMap(
+      'dm',
+      list.filter((message) => !message.deletedAt).map((message) => String(message.id))
+    )
     return response.ok({
       success: true,
-      data: list.map(serializeMsg),
+      data: list.map((message) => {
+        const serialized = serializeMsg(message)
+        if (serialized.deleted) return serialized
+        return {
+          ...serialized,
+          reactions: reactionMap.get(String(message.id)) ?? {},
+        }
+      }),
     })
   }
 
@@ -229,7 +272,7 @@ export default class ChatMessagesController {
         .first()
 
       if (!conv) {
-        return response.ok({ success: true, data: [] })
+        return response.ok({ success: true, data: [], meta: null })
       }
 
       const list = await db.rawQuery(
@@ -243,6 +286,27 @@ export default class ChatMessagesController {
         [conv.id]
       )
 
+      const reactionMap = await loadReactionMap(
+        'dm',
+        list.rows.map((row: { id: string | number }) => row.id)
+      )
+      const readState = await db.rawQuery<{
+        rows: Array<{
+          user_id: string
+          last_read_message_id: string | null
+          updated_at: string | Date
+        }>
+      }>(
+        `SELECT user_id::text AS user_id,
+                last_read_message_id::text AS last_read_message_id,
+                updated_at
+         FROM chat_reads
+         WHERE conversation_id = ?
+           AND user_id IN (?, ?)`,
+        [String(conv.id), mySuid, peerSuid]
+      )
+      const myRead = readState.rows.find((row) => row.user_id === mySuid)
+      const peerRead = readState.rows.find((row) => row.user_id === peerSuid)
       console.log(`[CHAT 200] Loaded ${list.rows.length} messages for peer ${peerSuid} (conv: ${conv.id})`)
       return response.ok({
         success: true,
@@ -255,8 +319,15 @@ export default class ChatMessagesController {
           body: row.body,
           client_id: row.client_id,
           deleted: false,
+          reactions: reactionMap.get(String(row.id)) ?? {},
           created_at: new Date(row.created_at).toISOString(),
         })),
+        meta: {
+          conversation_id: String(conv.id),
+          my_last_read_message_id: myRead?.last_read_message_id ?? null,
+          peer_last_read_message_id: peerRead?.last_read_message_id ?? null,
+          peer_last_read_at: peerRead ? new Date(peerRead.updated_at).toISOString() : null,
+        },
       })
     } catch (err) {
       console.error(`[CHAT ERROR] peerMessages failed for ${peerSuid}:`, err)
@@ -296,21 +367,7 @@ export default class ChatMessagesController {
         return response.notFound({ success: false, message: 'Recipient not found.' })
       }
 
-      // Check blocking in both directions safely
-      let isBlocked = false
-      try {
-        const block = await UserBlock.query()
-          .where((q) => {
-            q.where('blocker_id', mySuid as any).where('blocked_id', payload.to_user_id as any)
-          })
-          .orWhere((q) => {
-            q.where('blocker_id', payload.to_user_id as any).where('blocked_id', mySuid as any)
-          })
-          .first()
-        isBlocked = !!block
-      } catch (blockErr) {
-        console.warn('[CHAT] UserBlock check skipped (table may be pending migration):', blockErr)
-      }
+      const isBlocked = await this.hasBlockBetween(mySuid, payload.to_user_id)
 
       if (isBlocked) {
         return response.forbidden({ success: false, message: 'Message could not be delivered.' })
@@ -481,6 +538,10 @@ export default class ChatMessagesController {
           { groupId }
         )
 
+        const reactionMap = await loadReactionMap(
+          'group',
+          (rows.rows || []).map((row: { id: string | number }) => row.id)
+        )
         return response.ok({
           success: true,
           data: (rows.rows || []).map((row: any) => ({
@@ -494,6 +555,7 @@ export default class ChatMessagesController {
             body: row.body,
             text: row.body,
             client_id: row.client_id || '',
+            reactions: reactionMap.get(String(row.id)) ?? {},
             created_at: new Date(row.created_at).toISOString(),
             time: new Date(row.created_at).toISOString(),
             deleted: false,
@@ -658,30 +720,66 @@ export default class ChatMessagesController {
     }
 
     const otherSuid = String(conv.userLowId) === mySuid ? String(conv.userHighId) : String(conv.userLowId)
-
-    // Upsert into chat_reads
-    await db.rawQuery(
-      `INSERT INTO chat_reads (conversation_id, user_id, last_read_message_id, updated_at)
-       VALUES (?, ?, ?, NOW())
-       ON CONFLICT (conversation_id, user_id) 
-       DO UPDATE SET 
-         last_read_message_id = GREATEST(chat_reads.last_read_message_id, EXCLUDED.last_read_message_id),
-         updated_at = NOW()`,
-      [convId, mySuid, payload.up_to_message_id]
-    )
-
-    try {
-      await transmit.broadcast(`chat/${otherSuid}`, {
-        event: 'conversation.read',
-        conversation_id: String(convId),
-        reader_id: mySuid,
-        up_to_message_id: payload.up_to_message_id,
-      })
-    } catch (err) {
-      console.error('Broadcast conversation.read error:', err)
-    }
+    await this.markConversationRead(conv, mySuid, otherSuid, payload.up_to_message_id)
 
     return response.ok({ success: true })
+  }
+
+  async readPeer({ auth, params, request, response }: HttpContext) {
+    const me = auth.getUserOrFail()
+    const mySuid = String(me.suid)
+    const rawPeerSuid = String(params.peerId || '').trim()
+    if (!/^\d+$/.test(rawPeerSuid)) {
+      return response.unprocessableEntity({
+        success: false,
+        message: 'Peer SUID must contain only digits.',
+      })
+    }
+
+    const mySuidBigInt = BigInt(mySuid)
+    const peerSuidBigInt = BigInt(rawPeerSuid)
+    if (peerSuidBigInt === mySuidBigInt) {
+      return response.unprocessableEntity({
+        success: false,
+        message: 'Peer SUID must be different from the current user.',
+      })
+    }
+    if (peerSuidBigInt > maxBigIntId) {
+      return response.notFound({ success: false, message: 'Conversation not found.' })
+    }
+
+    const payload = await request.validateUsing(markReadValidator)
+    const peerSuid = peerSuidBigInt.toString()
+    const lowId = mySuidBigInt < peerSuidBigInt ? mySuidBigInt.toString() : peerSuid
+    const highId = mySuidBigInt < peerSuidBigInt ? peerSuid : mySuidBigInt.toString()
+    const conv = await ChatConversation.query()
+      .where('user_low_id', lowId)
+      .where('user_high_id', highId)
+      .first()
+
+    if (!conv) {
+      return response.notFound({ success: false, message: 'Conversation not found.' })
+    }
+
+    const result = await this.markConversationRead(
+      conv,
+      mySuid,
+      peerSuid,
+      payload.up_to_message_id
+    )
+    if (!result.changed) {
+      return response.ok({ success: true, data: { changed: false } })
+    }
+
+    return response.ok({
+      success: true,
+      data: {
+        changed: true,
+        conversation_id: result.conversationId,
+        up_to_message_id: result.upToMessageId,
+        read_at: result.readAt,
+      },
+    })
   }
 
   /**
@@ -723,21 +821,205 @@ export default class ChatMessagesController {
     return response.ok({ success: true, message: 'Message deleted.' })
   }
 
+  private async markConversationRead(
+    conv: ChatConversation,
+    readerSuid: string,
+    peerSuid: string,
+    requestedUpToMessageId: string
+  ): Promise<{
+    changed: boolean
+    conversationId: string
+    upToMessageId: string | null
+    readAt: string | null
+  }> {
+    const effectiveResult = await db.rawQuery<{
+      rows: Array<{ effective_id: string | null }>
+    }>(
+      `SELECT MAX(id)::text AS effective_id
+       FROM chat_messages
+       WHERE conversation_id = ?
+         AND sender_id = ?
+         AND id <= LEAST(?::numeric, 9223372036854775807)::bigint`,
+      [String(conv.id), peerSuid, requestedUpToMessageId]
+    )
+    const effectiveMessageId = effectiveResult.rows[0]?.effective_id ?? null
+    const conversationId = String(conv.id)
+
+    if (!effectiveMessageId) {
+      return {
+        changed: false,
+        conversationId,
+        upToMessageId: null,
+        readAt: null,
+      }
+    }
+
+    const upsertResult = await db.rawQuery<{
+      rows: Array<{ last_read_message_id: string; updated_at: string | Date }>
+    }>(
+      `INSERT INTO chat_reads (conversation_id, user_id, last_read_message_id, updated_at)
+       VALUES (?, ?, ?, NOW())
+       ON CONFLICT (conversation_id, user_id)
+       DO UPDATE SET
+         last_read_message_id = EXCLUDED.last_read_message_id,
+         updated_at = NOW()
+       WHERE chat_reads.last_read_message_id IS NULL
+          OR chat_reads.last_read_message_id < EXCLUDED.last_read_message_id
+       RETURNING last_read_message_id::text AS last_read_message_id, updated_at`,
+      [conversationId, readerSuid, effectiveMessageId]
+    )
+    const updatedRead = upsertResult.rows[0]
+
+    if (!updatedRead) {
+      return {
+        changed: false,
+        conversationId,
+        upToMessageId: effectiveMessageId,
+        readAt: null,
+      }
+    }
+
+    const readAt =
+      updatedRead.updated_at instanceof Date
+        ? updatedRead.updated_at.toISOString()
+        : new Date(updatedRead.updated_at).toISOString()
+    const convKey = `dm_${[readerSuid, peerSuid].sort().join('__')}`
+    const payload = {
+      event: 'conversation.read',
+      conversation_id: conversationId,
+      conv_key: convKey,
+      reader_id: readerSuid,
+      up_to_message_id: effectiveMessageId,
+      read_at: readAt,
+    }
+    const isBlocked = await this.hasBlockBetween(readerSuid, peerSuid)
+    const broadcasts = [
+      ...(!isBlocked
+        ? [
+            () =>
+              transmit.broadcast(`chat/${peerSuid}`, {
+                ...payload,
+                peer_suid: readerSuid,
+              }),
+          ]
+        : []),
+      () =>
+        transmit.broadcast(`chat/${readerSuid}`, {
+          ...payload,
+          peer_suid: peerSuid,
+        }),
+    ]
+    const results = await Promise.allSettled(
+      broadcasts.map((broadcast) => Promise.resolve().then(broadcast))
+    )
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        logger.warn({ err: result.reason }, 'Conversation read broadcast failed')
+      }
+    }
+
+    return {
+      changed: true,
+      conversationId,
+      upToMessageId: effectiveMessageId,
+      readAt,
+    }
+  }
+
+  private async hasBlockBetween(firstSuid: string, secondSuid: string): Promise<boolean> {
+    try {
+      const block = await UserBlock.query()
+        .where((query) => {
+          query.where('blocker_id', firstSuid as any).where('blocked_id', secondSuid as any)
+        })
+        .orWhere((query) => {
+          query.where('blocker_id', secondSuid as any).where('blocked_id', firstSuid as any)
+        })
+        .first()
+
+      return Boolean(block)
+    } catch (err) {
+      console.warn('[CHAT] UserBlock check skipped (table may be pending migration):', err)
+      return false
+    }
+  }
+
   /**
    * POST /chat/typing
    */
   async typing({ auth, request, response }: HttpContext) {
     const me = auth.getUserOrFail()
-    const payload = await request.validateUsing(typingValidator)
-
     try {
-      await transmit.broadcast(`chat/${payload.to_user_id}`, {
+      const payload = await request.validateUsing(typingValidator)
+      const senderSuid = String(me.suid)
+      const recipients = payload.to_suids.filter((suid) => suid !== senderSuid)
+      if (recipients.length === 0) return response.ok({ success: true })
+
+      if (payload.conv_key.startsWith('dm_')) {
+        if (me.roleCode === 'STUDENT' || recipients.length !== 1) {
+          return response.ok({ success: true })
+        }
+
+        const expectedConvKey = `dm_${[senderSuid, recipients[0]].sort().join('__')}`
+        if (payload.conv_key !== expectedConvKey) return response.ok({ success: true })
+      }
+
+      const rateLimitKey = `${senderSuid}:${payload.conv_key}`
+      if (payload.typing) {
+        const now = Date.now()
+        const lastSentAt = typingRateLimits.get(rateLimitKey)
+        if (lastSentAt !== undefined && now - lastSentAt < 1_000) {
+          return response.ok({ success: true })
+        }
+        typingRateLimits.set(rateLimitKey, now)
+      }
+
+      const activeUsers = await User.query()
+        .whereIn('suid', recipients)
+        .where('status', 'APPROVED')
+        .select('suid')
+      const activeRecipientSuids = activeUsers.map((user) => String(user.suid))
+      if (activeRecipientSuids.length === 0) return response.ok({ success: true })
+
+      const blockedRecipients = await UserBlock.query()
+        .whereIn('blocker_id', activeRecipientSuids)
+        .where('blocked_id', senderSuid)
+        .select('blocker_id')
+      const blockedRecipientSuids = new Set(
+        blockedRecipients.map((block) => String(block.blockerId))
+      )
+      const deliverTo = activeRecipientSuids.filter((suid) => !blockedRecipientSuids.has(suid))
+
+      const payloadToBroadcast = {
         event: 'typing',
-        from_user_id: String(me.suid),
-        from_name: me.name,
-      })
+        conv_key: payload.conv_key,
+        typing: payload.typing,
+        from_user: {
+          suid: senderSuid,
+          name: me.name,
+          avatar: me.avatar ?? null,
+        },
+        to_suids: recipients,
+      }
+
+      const results = await Promise.allSettled(
+        deliverTo.map((recipientSuid) =>
+          transmit.broadcast(`chat/${recipientSuid}`, payloadToBroadcast)
+        )
+      )
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          logger.warn({ err: result.reason }, 'Typing broadcast failed')
+        }
+      }
     } catch (err) {
-      console.error('Broadcast typing error:', err)
+      if (err instanceof errors.E_VALIDATION_ERROR) {
+        return response.unprocessableEntity({
+          success: false,
+          message: err.messages.map((item: { message: string }) => item.message).join(' '),
+        })
+      }
+      logger.warn({ err }, 'Typing endpoint failed')
     }
 
     return response.ok({ success: true })
