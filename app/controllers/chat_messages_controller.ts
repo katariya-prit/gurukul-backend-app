@@ -559,7 +559,7 @@ export default class ChatMessagesController {
         const insertRes = await db.rawQuery(
           `INSERT INTO group_messages (group_id, sender_id, body, client_id, created_at)
            VALUES (:groupId, :senderId, :body, :clientId, NOW())
-           RETURNING id, group_id, sender_id, body, client_iad, created_at`,
+           RETURNING id, group_id, sender_id, body, client_id, created_at`,
           {
             groupId,
             senderId: mySuid,
